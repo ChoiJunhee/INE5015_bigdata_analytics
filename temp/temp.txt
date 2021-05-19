@@ -1,0 +1,20 @@
+IterativeImputer
+https://scikit-learn.org/stable/modules/generated/sklearn.impute.IterativeImputer.html
+
+Bayesian Ridge
+https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.BayesianRidge.html
+https://runebook.dev/ko/docs/scikit_learn/modules/generated/sklearn.linear_model.bayesianridge
+https://wikidocs.net/25991
+
+RFE / RFECV
+https://process-mining.tistory.com/138
+https://scikit-learn.org/stable/auto_examples/feature_selection/plot_rfe_with_cross_validation.html#sphx-glr-auto-examples-feature-selection-plot-rfe-with-cross-validation-py
+
+SMOTE
+https://mkjjo.github.io/python/2019/01/04/smote_duplicate.html
+
+SCALER
+https://mkjjo.github.io/python/2019/01/10/scaler.html
+
+SEABORN
+https://wikidocs.net/86290
