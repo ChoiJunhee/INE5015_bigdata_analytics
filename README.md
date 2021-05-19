@@ -8,6 +8,7 @@
 ---
 
 ! 주의사항 ! master branch에 push 작업을 할 때는 충돌을 피할 수 있게 
+
 해당 작업에 대한 issue 작성 후 -> 작업 -> issue 검토 -> issue close 과정을 거쳐주세요.
 (branch 쓰는게 가장 편하긴 한데...)
 
