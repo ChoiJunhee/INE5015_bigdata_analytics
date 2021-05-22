@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 # 추후 확장성을 고려하여 제작하였습니다. */
 # 스케치 작업이니 작업 흐름을 봐주시면 좋겠습니다. #
 
@@ -91,11 +92,13 @@ def DataAnalytics(file_link):
 	for i in range(0, len(col_names)):
 		for j in range(0, len(row_names)):
 			temp = []
-			if((corr_data_nan[col_names[i]][row_names[j]] & (corr_data_nan[col_names[i]][row_names[j]]))):
-				temp.apeend(col_names[i])
+			if (corr_data_nan[col_names[i]][row_names[j]] > 0.8) & (corr_data_nan[col_names[i]][row_names[j]]):
+				temp.append(col_names[i])
 				temp.append(row_names[j])
 				temp.append(corr_data_nan[col_names[i]][row_names[j]])
 				corr_list.append(temp)
+
+	print(corr_list)
 
 
 	# 찾은 내용을 지우도록 합니다. 기존 계획과 약간 순서가 달라졌습니다.
