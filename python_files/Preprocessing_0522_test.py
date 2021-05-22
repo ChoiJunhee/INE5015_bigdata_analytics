@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-%matplotlib inline
-
 
 # 추후 확장성을 고려하여 제작하였습니다. */
 # 스케치 작업이니 작업 흐름을 봐주시면 좋겠습니다. #
@@ -23,9 +21,9 @@ def DataAnalytics(file_link):
 	## 시각화 시작 ##
 	print("PASS / FAIL\n데이터 비율")
 	# 이 부분은 file_link를 확인해야 하므로 추후 수정
-	pie_ratio [0, 0]
-	pie_labels ['PASS', 'FAIL']
-	plt.pie(ratic=pie_ratio, labels=pie_labels, autopct='%.1f%%')
+	pie_ratio = [0, 0]
+	pie_labels = ['PASS', 'FAIL']
+	plt.pie(pie_ratio, labels=pie_labels, autopct='%.1f%%')
 	plt.show()
 	## 시각화 종료 ##
 
@@ -34,7 +32,7 @@ def DataAnalytics(file_link):
 	
 
 	# 분석을 위해 숫자 데이터만 분리하고 Feature 번호를 만들어줌
-	raw_DF_char = raw_DF_original.loc([:, ['Time', 'Pass/Fail']])
+	raw_DF_char = raw_DF_original.loc[:, ['Time', 'Pass/Fail']]
 	raw_DF_inte = raw_DF_original.drop(['Time', 'Pass/Fail'], axis=1).add_prefix('F')
 	raw_DF_original = pd.concat([raw_DF_char, raw_DF_inte], axis=1)
 
@@ -71,4 +69,25 @@ def DataAnalytics(file_link):
 	refine2_DF.describe()
 
 
-	# 여기까지가 refined 2.2 까지의 과정입니다. 
+	# 변수 간 상관관계, 다중 공선성... 
+	## abs 8 의 기준 ? (수정해야 함)
+	corr_data = refine2_DF.corr()
+	corr_data_nan = corr_data[corr_data > abs(0.8)]
+
+	# 다중 공선성이 높은 Feature를 찾는 과정
+	col_names = list(corr_data_nan)
+	row_names = list(corr_data_nan.index)
+	corr_list = []
+
+	for i in range(0, len(col_names)):
+		for j in range(0, len(row_names)):
+			temp = []
+			if((corr_data_nan[col_names[i]][row_names[j]] & (corr_data_nan[col_names[i]][row_names[j]]))):
+				temp.apeend(col_names[i])
+				temp.append(row_names[j])
+				temp.append(corr_data_nan[col_names[i]][row_names[j]])
+				corr_list.append(temp)
+
+	print(corr_list)
+
+DataAnalytics('./uci-secom.csv')
