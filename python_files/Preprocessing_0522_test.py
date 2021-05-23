@@ -122,7 +122,7 @@ def DataAnalytics(file_link):
 	## 기존 방법에서는 이 프레임의 결측치를 0으로 채우고 진행하였음.
 	### 문제가 발생할 여지가 있으니 유의할 것.
 	corr_df = pd.concat([xdf, ydf], ignore_index=True, axis=1)
-	corr_df = corr_df.fillna(0)
+	#corr_df = corr_df.fillna(0)
 
 	corr_df['sum'] = corr_df[0]+corr_df[1]
 	corr_df = corr_df.sort_values(by=['sum'], axis=0, ascending=False)
@@ -137,6 +137,40 @@ def DataAnalytics(file_link):
 	print("=============== REFINE 3 ==============")
 	print(refine3_DF)
 	print("\n\n")
+
+
+
+	# 결측치 처리
+	## 결측치가 ~40%인 데이터셋, ~50%인 데이터셋, ~60%인 데이터셋으로 분리
+
+	# 결측치 비율 확인
+	## 버그 : 이 부분에서 null_percent가 계산이 안됩니다... 
+	rf3_null_stat = refine3_DF.describe().transpose()
+	rf3_null_stat = rf3_null_stat.isnull().sum()
+
+	print("RFNULLSTAT")
+	print(rf3_null_stat)
+	print()
+	null_df = pd.DataFrame(rf3_null_stat)
+	null_df['null_percent'] = (null_df[0] / len(null_df.index)) * 100
+	print(null_df)
+
+	rm_40 = null_df[null_df['null_percent'] > 0.4].index
+	rm_50 = null_df[null_df['null_percent'] > 0.5].index
+	rm_60 = null_df[null_df['null_percent'] > 0.6].index
+
+	refine4_rm40 = refine3_DF.drop(rm_40, axis=1)
+	refine4_rm50 = refine3_DF.drop(rm_50, axis=1)
+	refine4_rm60 = refine3_DF.drop(rm_60, axis=1)
+
+	print()
+	print(refine4_rm40)
+	print()
+	print(refine4_rm50)
+	print()
+	print(refine4_rm60)
+	print()
+
 DataAnalytics('./uci-secom.csv')
 
 
