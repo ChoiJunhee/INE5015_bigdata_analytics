@@ -161,40 +161,69 @@ def DataAnalytics(file_link):
 
 	# 결측치 처리
 	## 결측치가 ~40%인 데이터셋, ~50%인 데이터셋, ~60%인 데이터셋으로 분리
-	refine3_ex20_trans = refine3_ex20.transpose()
-	refine3_ex30_trans = refine3_ex30.transpose()
-	refine3_ex40_trans = refine3_ex40.transpose()
+	### 이 부분은 리팩토링 할 때 무조건 모듈화 하도록 하겠습니다 ㅋㅋ
+	# 결측치 비율 확인
+	null_ex20 = refine3_ex20.isnull().sum()
+	null_ex30 = refine3_ex30.isnull().sum()
+	null_ex40 = refine3_ex40.isnull().sum()
 
-	# 결측치 비율 확인 < 버그 >
-	null_ex20 = refine3_ex20_trans.isnull().sum()
-	null_ex30 = refine3_ex30_trans.isnull().sum()
-	null_ex40 = refine3_ex40_trans.isnull().sum()
+	null_df_20 = pd.DataFrame(null_ex20)
+	null_df_30 = pd.DataFrame(null_ex30)
+	null_df_40 = pd.DataFrame(null_ex40)
+	
+	null_df_20['null_percent'] = (null_df_20[0] / len(null_df_20.index))
+	null_df_30['null_percent'] = (null_df_20[0] / len(null_df_30.index))
+	null_df_40['null_percent'] = (null_df_20[0] / len(null_df_40.index))
 
-	print(null_ex20)
-	print(null_ex30)
-	print(null_ex40)
+	ex20_nl40 = null_df_20[null_df_20['null_percent'] > 0.4].index
+	ex20_nl50 = null_df_20[null_df_20['null_percent'] > 0.5].index
+	ex20_nl60 = null_df_20[null_df_20['null_percent'] > 0.6].index
 
-	return;
-	null_df = pd.DataFrame(rf3_null_stat)
-	null_df['null_percent'] = (null_df[0] / len(null_df.index)) * 100
-	print(null_df)
+	ex30_nl40 = null_df_30[null_df_30['null_percent'] > 0.4].index
+	ex30_nl50 = null_df_30[null_df_30['null_percent'] > 0.5].index
+	ex30_nl60 = null_df_30[null_df_30['null_percent'] > 0.6].index
 
-	rm_40 = null_df[null_df['null_percent'] > 0.4].index
-	rm_50 = null_df[null_df['null_percent'] > 0.5].index
-	rm_60 = null_df[null_df['null_percent'] > 0.6].index
+	ex40_nl40 = null_df_40[null_df_40['null_percent'] > 0.4].index
+	ex40_nl50 = null_df_40[null_df_40['null_percent'] > 0.5].index
+	ex40_nl60 = null_df_40[null_df_40['null_percent'] > 0.6].index
 
-	refine4_rm40 = refine3_DF.drop(rm_40, axis=1)
-	refine4_rm50 = refine3_DF.drop(rm_50, axis=1)
-	refine4_rm60 = refine3_DF.drop(rm_60, axis=1)
 
-	print()
-	print(refine4_rm40)
-	print()
-	print(refine4_rm50)
-	print()
-	print(refine4_rm60)
-	print()
+	refine4_ex20_nl40 = refine3_ex20.drop(ex20_nl40, axis=1)
+	refine4_ex30_nl40 = refine3_ex30.drop(ex30_nl40, axis=1)
+	refine4_ex40_nl40 = refine3_ex40.drop(ex40_nl40, axis=1)
 
+	refine4_ex20_nl50 = refine3_ex20.drop(ex20_nl50, axis=1)
+	refine4_ex30_nl50 = refine3_ex30.drop(ex30_nl50, axis=1)
+	refine4_ex40_nl50 = refine3_ex40.drop(ex40_nl50, axis=1)
+
+	refine4_ex20_nl60 = refine3_ex20.drop(ex20_nl60, axis=1)
+	refine4_ex30_nl60 = refine3_ex30.drop(ex30_nl60, axis=1)
+	refine4_ex40_nl60 = refine3_ex40.drop(ex40_nl60, axis=1)
+
+	# 
+	refine4_nl40_list = [refine4_ex20_nl40, refine4_ex30_nl40, refine4_ex40_nl40]
+	refine4_nl50_list = [refine4_ex20_nl50, refine4_ex30_nl50, refine4_ex40_nl50]
+	refine4_nl60_list = [refine4_ex20_nl60, refine4_ex30_nl60, refine4_ex40_nl60]
+
+	print("=============== REFINE 4 ==============")
+	print("=============== NULL 40 ==========+====")
+	for i in refine4_nl40_list:
+		print(i)
+		print()
+
+	print("\n\n")
+	print("=============== NULL 50 ==========+====")
+	for i in refine4_nl50_list:
+		print(i)
+		print()
+
+	print("\n\n")
+	print("=============== NULL 60 ==========+====")
+	for i in refine4_nl60_list:
+		print(i)
+		print()
+
+	print("\n\n\n")
 DataAnalytics('./uci-secom.csv')
 
 
