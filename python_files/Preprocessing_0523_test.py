@@ -59,6 +59,7 @@ def DataAnalytics(file_link):
 
 	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
 	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
+	# Feature Selection에서도... 엄청나게... 오래 걸릴듯... ㅠㅠ
 	refine3_ex20_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.4)
 	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n50", refine2_ex20, 0.5)
 	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n60", refine2_ex20, 0.6)
