@@ -24,7 +24,7 @@ def DataAnalytics(file_link):
 	print("\n\n")
 
 
-	refine1_DF = close_std_zero_remove(raw_DF_original)
+	refine1_DF = close_std_zero_remove(raw_DF_origin)
 	print("=============== REFINE 1 ==============")
 	print(refine1_DF.describe())
 	print("\n\n")
@@ -91,6 +91,7 @@ def raw_data_refine(raw_data):
 	raw_DF_char = raw_data.loc[:, ['Time', 'Pass/Fail']]
 	raw_DF_inte = raw_data.drop(['Time', 'Pass/Fail'], axis=1).add_prefix('F')
 	raw_DF_original = pd.concat([raw_DF_char, raw_DF_inte], axis=1)
+	
 	return raw_DF_original
 
 def close_std_zero_remove(raw_df):
