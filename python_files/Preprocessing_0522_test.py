@@ -20,7 +20,7 @@ def DataAnalytics(file_link):
 
 	# 데이터 비율과 통계적 수치 확인
 	## 시각화 시작 ##
-	print("PASS / FAIL\n데이터 비율")
+	#print("PASS / FAIL\n데이터 비율")
 	Pass_Fail = raw_DF_original['Pass/Fail'].value_counts().values
 
 	ratio = [Pass_Fail[0]/len(raw_DF_statistic), Pass_Fail[1]/len(raw_DF_statistic)]
@@ -30,7 +30,7 @@ def DataAnalytics(file_link):
 
 	plt.pie(ratio, labels=labels, autopct='%.1f%%',startangle=260, counterclock=False, wedgeprops=wedgeprops)
 	plt.title('Pass/Fail')
-	plt.show()
+	#plt.show()
 
 	## 시각화 종료 ##
 
@@ -43,8 +43,9 @@ def DataAnalytics(file_link):
 	raw_DF_inte = raw_DF_original.drop(['Time', 'Pass/Fail'], axis=1).add_prefix('F')
 	raw_DF_original = pd.concat([raw_DF_char, raw_DF_inte], axis=1)
 
-	print('original dataframe')
-	print(raw_DF_original.head())
+	print("=============== RAW-DATA ==============")
+	print(raw_DF_original)
+	print("\n\n")
 
 
 
@@ -65,7 +66,9 @@ def DataAnalytics(file_link):
 
 	# 표준편차 제거가 이루어진 데이터
 	refine1_DF = raw_DF_original.drop(remove_std)
+	print("=============== REFINE 1 ==============")
 	print(refine1_DF.describe())
+	print("\n\n")
 
 
 	# 표준편차가 0에 가까운 Feature 확인
@@ -76,7 +79,9 @@ def DataAnalytics(file_link):
 	# 최종 발표 시점에는 리팩토링을 진행하도록 하겠습니다.
 	# 주석도 깔끔히 정리할 예정입니다... 
 	refine2_DF = refine1_DF.drop(remove_std, axis=1)
+	print("=============== REFINE 2 ==============")
 	print(refine2_DF.describe())
+	print("\n\n")
 
 
 	# 변수 간 상관관계, 다중 공선성... 
@@ -92,30 +97,31 @@ def DataAnalytics(file_link):
 	for i in range(0, len(col_names)):
 		for j in range(0, len(row_names)):
 			temp = []
-			if (corr_data_nan[col_names[i]][row_names[j]] > 0.8) & (corr_data_nan[col_names[i]][row_names[j]]):
+			if(corr_data_nan[col_names[i]][row_names[j]] > 0.8):
 				temp.append(col_names[i])
 				temp.append(row_names[j])
 				temp.append(corr_data_nan[col_names[i]][row_names[j]])
 				corr_list.append(temp)
-
-	print(corr_list)
 
 
 	# 찾은 내용을 지우도록 합니다. 기존 계획과 약간 순서가 달라졌습니다.
 	# 이 부분 전 후로 데이터셋의 변화를 시각화 해주시면 됩니다.
 	# 다중공선성에 대한 기준은 추후 수정하겠지만, 전 후 상황을 비교할 수 있는 자료를 부탁드립니다.
 
-	temp1 = pd.DataFrame(corr_list)
-	temp2 = refine2_DF.drop_duplicates([2], keep='first')
-	temp3 = temp2[0].value_counts()
-	temp3_df = pd.DataFrame(temp3)
-	temp4 = refine2_DF[1].value_counts()
-	temp4_df = pd.DataFrame(temp4)
+	corr_list_df = pd.DataFrame(corr_list)
+	#print("-----corr_list_dataframe-----")
+	#print(corr_list_df)
+
+	corr_result = corr_list_df.drop_duplicates([2], keep="first")
+	x = corr_result[0].value_counts()
+	xdf = pd.DataFrame(x)
+	y = corr_result[1].value_counts()
+	ydf = pd.DataFrame(y)
 
 	# 다중 공선성이 높은 데이터들이 있는 데이터 프레임
 	## 기존 방법에서는 이 프레임의 결측치를 0으로 채우고 진행하였음.
 	### 문제가 발생할 여지가 있으니 유의할 것.
-	corr_df = pd.concat([temp3_df, temp4_df], ignore_index=True, axit=1)
+	corr_df = pd.concat([xdf, ydf], ignore_index=True, axis=1)
 	corr_df = corr_df.fillna(0)
 
 	corr_df['sum'] = corr_df[0]+corr_df[1]
@@ -126,8 +132,11 @@ def DataAnalytics(file_link):
 	for i in range(0, len(corr_df.index)):
 		extract.append(list(corr_df.index)[i])
 
-	print(extract)
-
+	# 다중 공선성이 높은 (0.8 이상) 피쳐 제거 완료
+	refine3_DF = refine2_DF.describe().drop(extract, axis=1)
+	print("=============== REFINE 3 ==============")
+	print(refine3_DF)
+	print("\n\n")
 DataAnalytics('./uci-secom.csv')
 
 
