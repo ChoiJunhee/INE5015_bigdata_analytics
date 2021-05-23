@@ -20,7 +20,7 @@ def DataAnalytics(file_link):
 
 	raw_DF_origin = raw_data_refine(raw_DF_original)
 	print("=============== RAW-DATA ==============")
-	print(raw_DF_origin)
+	print(raw_DF_origin.describe())
 	print("\n\n")
 
 
@@ -30,18 +30,19 @@ def DataAnalytics(file_link):
 	print("\n\n")
 
 	# @param : DataFrame, percentage, abs_num
+	# 상관관계가 높은 Feature 제거
 	refine2_ex20 = correlation_refine(refine1_DF, 0.2, 0.8)
 	refine2_ex30 = correlation_refine(refine1_DF, 0.3, 0.8)
 	refine2_ex40 = correlation_refine(refine1_DF, 0.4, 0.8)
 	print("=============== REFINE 2 ==============")
 	print("[상위 20% 제거]")
-	print(refine2_ex20)
+	print(refine2_ex20.describe())
 	print()
 	print("[상위 30% 제거]")
-	print(refine2_ex30)
+	print(refine2_ex30.describe())
 	print()
 	print("[상위 40% 제거]")
-	print(refine2_ex40)
+	print(refine2_ex40.describe())
 	print("\n\n")
 
 
@@ -64,20 +65,20 @@ def DataAnalytics(file_link):
 	refine3_nl60_list = [refine3_ex20_nl60, refine3_ex30_nl60, refine3_ex40_nl60]
 
 	print("=============== REFINE 4 ==============")
-	print("=============== NULL 40 ==========+====")
+	print("[결측치 40%]")
 	for i in refine3_nl40_list:
-		print(i)
+		print(i.describe())
 		print()
 	print("\n\n")
-	print("=============== NULL 50 ==========+====")
+	print("[결측치 50%]")
 	for i in refine3_nl50_list:
-		print(i)
+		print(i.describe())
 		print()
 
 	print("\n\n")
-	print("=============== NULL 60 ==========+====")
+	print("[결측치 60%]")
 	for i in refine3_nl60_list:
-		print(i)
+		print(i.describe())
 		print()
 
 	print("\n\n\n")
