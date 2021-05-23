@@ -95,8 +95,7 @@ def DataAnalytics(file_link):
 
 	print("\n\n\n")
 
-	# 결측치 제거 부분에서 전혀 처리가 안되는 부분이 있음!
-
+	# 결측치 제거 부분에서 전혀 처리가 안되는 부분이 있음..
 
 	# outlier 확인
 	refine4_nl40_list = []
@@ -173,9 +172,9 @@ def correlation_refine(data, per, abs_num):
 def missing_value_refine(name, data, per):
 	# 퍼센트에 따른 결측치 상위 Feature 제거
 	path = './' + str(name)
-	filename = name + str('.csv')
-	if os.path.isfile(path):
-		imputed_data = pd.read_csv(path)
+	filename = path + str('.csv')
+	if os.path.isfile(filename):
+		imputed_data = pd.read_csv(filename)
 		return imputed_data
 	null_var = data.isnull().sum()
 	null_df = pd.DataFrame(null_var)
