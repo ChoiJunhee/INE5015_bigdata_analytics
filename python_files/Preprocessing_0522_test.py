@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-# 추후 확장성을 고려하여 제작하였습니다. */
-# 스케치 작업이니 작업 흐름을 봐주시면 좋겠습니다. #
+# 추후 확장성을 고려하여 제작하였습니다.
+# 하나의 함수로 만들어져 있으나, 처리 과정을 분리하여 만들 계획입니다.
+# 작업 흐름을 중점적으로 봐주시면 좋겠습니다.
 
 def DataAnalytics(file_link):
 
@@ -107,12 +108,9 @@ def DataAnalytics(file_link):
 	# 찾은 내용을 지우도록 합니다. 기존 계획과 약간 순서가 달라졌습니다.
 	# 이 부분 전 후로 데이터셋의 변화를 시각화 해주시면 됩니다.
 	# 다중공선성에 대한 기준은 추후 수정하겠지만, 전 후 상황을 비교할 수 있는 자료를 부탁드립니다.
-
 	corr_list_df = pd.DataFrame(corr_list)
-	#print("-----corr_list_dataframe-----")
-	#print(corr_list_df)
-
 	corr_result = corr_list_df.drop_duplicates([2], keep="first")
+
 	x = corr_result[0].value_counts()
 	xdf = pd.DataFrame(x)
 	y = corr_result[1].value_counts()
@@ -122,35 +120,61 @@ def DataAnalytics(file_link):
 	## 기존 방법에서는 이 프레임의 결측치를 0으로 채우고 진행하였음.
 	### 문제가 발생할 여지가 있으니 유의할 것.
 	corr_df = pd.concat([xdf, ydf], ignore_index=True, axis=1)
-	#corr_df = corr_df.fillna(0)
-
-	corr_df['sum'] = corr_df[0]+corr_df[1]
+	corr_pc = corr_df.fillna(0)
+	corr_df['sum'] = corr_pc[0]+corr_pc[1]
 	corr_df = corr_df.sort_values(by=['sum'], axis=0, ascending=False)
 	
-	extract = []
+	#통계를 살펴본 결과, 중간값이 2, 평균이 3 정도... 
+	#print(corr_df.describe())
 
-	for i in range(0, len(corr_df.index)):
-		extract.append(list(corr_df.index)[i])
+	extract_20 = []
+	extract_30 = []
+	extract_40 = []
 
-	# 다중 공선성이 높은 (0.8 이상) 피쳐 제거 완료
-	refine3_DF = refine2_DF.describe().drop(extract, axis=1)
+	# 다중 공선성이 높은 상위 20%, 30%, 40% 개 제거
+	for i in range(0, int(len(corr_df.index)*0.2)):
+		extract_20.append(list(corr_df.index)[i])
+
+	for i in range(0, int(len(corr_df.index)*0.3)):
+		extract_30.append(list(corr_df.index)[i])
+
+	for i in range(0, int(len(corr_df.index)*0.4)):
+		extract_40.append(list(corr_df.index)[i])
+
+	# 정제된 3가지 버전의 DataFrame
+	refine3_ex20 = refine2_DF.drop(extract_20, axis=1)
+	refine3_ex30 = refine2_DF.drop(extract_30, axis=1)
+	refine3_ex40 = refine2_DF.drop(extract_40, axis=1) 
+	
+	print("\n")
 	print("=============== REFINE 3 ==============")
-	print(refine3_DF)
-	print("\n\n")
-
+	print("============== EXTRACT 20 =============")
+	print(refine3_ex20)
+	print("\n")
+	print("============== EXTRACT 30 =============")
+	print(refine3_ex30)
+	print("\n")
+	print("============== EXTRACT 40 =============")
+	print(refine3_ex40)
+	print("\n\n\n")
 
 
 	# 결측치 처리
 	## 결측치가 ~40%인 데이터셋, ~50%인 데이터셋, ~60%인 데이터셋으로 분리
+	refine3_ex20_trans = refine3_ex20.transpose()
+	refine3_ex30_trans = refine3_ex30.transpose()
+	refine3_ex40_trans = refine3_ex40.transpose()
 
-	# 결측치 비율 확인
-	## 버그 : 이 부분에서 null_percent가 계산이 안됩니다... 
-	rf3_null_stat = refine3_DF.describe().transpose()
-	rf3_null_stat = rf3_null_stat.isnull().sum()
+	# 결측치 비율 확인 < 버그 >
+	null_ex20 = refine3_ex20_trans.isnull().sum()
+	null_ex30 = refine3_ex30_trans.isnull().sum()
+	null_ex40 = refine3_ex40_trans.isnull().sum()
 
-	print("RFNULLSTAT")
-	print(rf3_null_stat)
-	print()
+	print(null_ex20)
+	print(null_ex30)
+	print(null_ex40)
+
+	return;
 	null_df = pd.DataFrame(rf3_null_stat)
 	null_df['null_percent'] = (null_df[0] / len(null_df.index)) * 100
 	print(null_df)
