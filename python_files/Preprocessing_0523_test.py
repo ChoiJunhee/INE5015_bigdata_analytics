@@ -13,11 +13,15 @@ from sklearn.impute import IterativeImputer
 # 이제 최적의 전처리 방법을 통해 최적의 데이터셋을 얻으면 됩니다.
 
 def DataAnalytics(file_link):
-	# RAW-DATA : 원본 데이터에서 필요한 데이터만 분리하고, Feature에 이름을 붙여줌
-	# REFINE1  : 의미가 없는 표준편차가 0.005 이하인 Feature를 제거함
-	# REFINE2  : 변수 간 상관관계를 분석하여, 수치가 높은 Feature를 제거함
-	# REFINE3  : 결측치 비율에 따라 일정 비율 이상 Feature 제거
-	# REFINE4  : 이상치 비율에 따라 일정 비율 이상 Feature 제거
+	# RAW-DATA : 원본 데이터에서 필요한 데이터만 분리.
+	# REFINE1  : 의미가 없는 표준편차가 0.005 이하인 Feature를 제거
+	# REFINE2  : 변수 간 상관관계를 분석하여, 수치가 높은 Feature를 제거
+	# REFINE3  : 결측치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
+	# REFINE4  : 이상치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
+	# REFINE5  : 데이터 스케일링 작업
+	# REFINE6  : Feature Selection (RFE)
+	# REFINE7  : Oversampling (Pass data)
+	# REFINE8  : 마지막 단계 (미정) 
 
 	#원본 데이터 셋과 통계용 데이터 셋을 만듭니다. 
 	raw_DF_original = pd.read_csv(file_link)
@@ -56,16 +60,16 @@ def DataAnalytics(file_link):
 	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
 	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
 	refine3_ex20_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.4)
-	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.5)
-	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.6)
+	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n50", refine2_ex20, 0.5)
+	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n60", refine2_ex20, 0.6)
 	
-	refine3_ex30_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex30, 0.4)
-	refine3_ex30_nl50 = missing_value_refine("rf3_e20_n40", refine2_ex30, 0.5)
-	refine3_ex30_nl60 = missing_value_refine("rf3_e20_n40", refine2_ex30, 0.6)
+	refine3_ex30_nl40 = missing_value_refine("rf3_e30_n40", refine2_ex30, 0.4)
+	refine3_ex30_nl50 = missing_value_refine("rf3_e30_n50", refine2_ex30, 0.5)
+	refine3_ex30_nl60 = missing_value_refine("rf3_e30_n60", refine2_ex30, 0.6)
 	
-	refine3_ex40_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex40, 0.4)
-	refine3_ex40_nl50 = missing_value_refine("rf3_e20_n40", refine2_ex40, 0.5)
-	refine3_ex40_nl60 = missing_value_refine("rf3_e20_n40", refine2_ex40, 0.6)
+	refine3_ex40_nl40 = missing_value_refine("rf3_e40_n40", refine2_ex40, 0.4)
+	refine3_ex40_nl50 = missing_value_refine("rf3_e40_n50", refine2_ex40, 0.5)
+	refine3_ex40_nl60 = missing_value_refine("rf3_e40_n60", refine2_ex40, 0.6)
 
 	refine3_nl40_list = [refine3_ex20_nl40, refine3_ex30_nl40, refine3_ex40_nl40]
 	refine3_nl50_list = [refine3_ex20_nl50, refine3_ex30_nl50, refine3_ex40_nl50]
@@ -202,8 +206,8 @@ def outlier_processing(data, per):
 
 	#IQR Return
 
-def outlier_delete(data, per):
-	#IQR을 기반으로 일정 percent가 넘는 이상치를 가지는 Feature를 제거
+def outlier_refine(data, per):
+	#IQR을 기반으로 일정 percent가 넘는 이상치를 가지는 Feature를 제거 및 보정
 	pass
 
 def data_scaling(data, num):
