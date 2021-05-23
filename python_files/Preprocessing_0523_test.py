@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+
 
 # 데이터 전처리에 있어 여러 결과를 도출하기 위한 
 # 기본적인 기능을 모듈화 하여 프로그래밍 하였습니다.
@@ -12,6 +15,8 @@ def DataAnalytics(file_link):
 	# RAW-DATA : 원본 데이터에서 필요한 데이터만 분리하고, Feature에 이름을 붙여줌
 	# REFINE1  : 의미가 없는 표준편차가 0.005 이하인 Feature를 제거함
 	# REFINE2  : 변수 간 상관관계를 분석하여, 수치가 높은 Feature를 제거함
+	# REFINE3  : 결측치 비율에 따라 일정 비율 이상 Feature 제거
+	# REFINE4  : 이상치 비율에 따라 일정 비율 이상 Feature 제거
 
 	#원본 데이터 셋과 통계용 데이터 셋을 만듭니다. 
 	raw_DF_original = pd.read_csv(file_link)
@@ -35,13 +40,13 @@ def DataAnalytics(file_link):
 	refine2_ex30 = correlation_refine(refine1_DF, 0.3, 0.8)
 	refine2_ex40 = correlation_refine(refine1_DF, 0.4, 0.8)
 	print("=============== REFINE 2 ==============")
-	print("[상위 20% 제거]")
+	print("[corr 상위 20% 제거]")
 	print(refine2_ex20.describe())
 	print()
-	print("[상위 30% 제거]")
+	print("[corr 상위 30% 제거]")
 	print(refine2_ex30.describe())
 	print()
-	print("[상위 40% 제거]")
+	print("[corr 상위 40% 제거]")
 	print(refine2_ex40.describe())
 	print("\n\n")
 
@@ -83,8 +88,20 @@ def DataAnalytics(file_link):
 
 	print("\n\n\n")
 
-	# outlier 확인 (현재 9개의 데이터 셋)
-	outlier_processing(refine3_ex40_nl60, 123)
+	# 결측치 제거 부분에서 전혀 처리가 안되는 부분이 있음!
+
+
+	# outlier 확인
+	refine4_nl40_list = []
+	refine4_nl50_list = []
+	refine4_nl60_list = []
+
+	for i in refine3_nl40_list:
+		refine4_nl40_list.append(outlier_processing(i, 0))
+	for i in refine3_nl50_list:
+		refine4_nl50_list.append(outlier_processing(i, 0))
+	for i in refine3_nl60_list:
+		refine4_nl60_list.append(outlier_processing(i, 0))
 	print("=============== REFINE 4 ==============")
 
 def raw_data_refine(raw_data):
@@ -153,8 +170,11 @@ def missing_value_refine(data, per):
 	null_df['null_percentage'] = (null_df[0] / len(null_df.index))
 
 	null_list = null_df[null_df['null_percentage'] > per].index
-	result = data.drop(null_list, axis=1)
+	deleted_data = data.drop(null_list, axis=1)
 
+	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
+	deleted_data = deleted_data.drop(['Time'], axis=1)
+	result = pd.DataFrame(IterativeImputer(verbose=False).fit_transform(deleted_data))
 	return result
 
 def outlier_processing(data, per):
