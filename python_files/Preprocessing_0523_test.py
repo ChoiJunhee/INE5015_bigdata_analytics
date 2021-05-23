@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os.path
 
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
@@ -53,17 +54,18 @@ def DataAnalytics(file_link):
 
 
 	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
-	refine3_ex20_nl40 = missing_value_refine(refine2_ex20, 0.4)
-	refine3_ex20_nl50 = missing_value_refine(refine2_ex20, 0.5)
-	refine3_ex20_nl60 = missing_value_refine(refine2_ex20, 0.6)
+	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
+	refine3_ex20_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.4)
+	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.5)
+	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.6)
 	
-	refine3_ex30_nl40 = missing_value_refine(refine2_ex30, 0.4)
-	refine3_ex30_nl50 = missing_value_refine(refine2_ex30, 0.5)
-	refine3_ex30_nl60 = missing_value_refine(refine2_ex30, 0.6)
+	refine3_ex30_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex30, 0.4)
+	refine3_ex30_nl50 = missing_value_refine("rf3_e20_n40", refine2_ex30, 0.5)
+	refine3_ex30_nl60 = missing_value_refine("rf3_e20_n40", refine2_ex30, 0.6)
 	
-	refine3_ex40_nl40 = missing_value_refine(refine2_ex40, 0.4)
-	refine3_ex40_nl50 = missing_value_refine(refine2_ex40, 0.5)
-	refine3_ex40_nl60 = missing_value_refine(refine2_ex40, 0.6)
+	refine3_ex40_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex40, 0.4)
+	refine3_ex40_nl50 = missing_value_refine("rf3_e20_n40", refine2_ex40, 0.5)
+	refine3_ex40_nl60 = missing_value_refine("rf3_e20_n40", refine2_ex40, 0.6)
 
 	refine3_nl40_list = [refine3_ex20_nl40, refine3_ex30_nl40, refine3_ex40_nl40]
 	refine3_nl50_list = [refine3_ex20_nl50, refine3_ex30_nl50, refine3_ex40_nl50]
@@ -163,8 +165,13 @@ def correlation_refine(data, per, abs_num):
 	result = data.drop(extract, axis=1)
 	return result
 
-def missing_value_refine(data, per):
+def missing_value_refine(name, data, per):
 	# 퍼센트에 따른 결측치 상위 Feature 제거
+	path = './' + str(name)
+	filename = name + str('.csv')
+	if os.path.isfile(path):
+		imputed_data = pd.read_csv(path)
+		return imputed_data
 	null_var = data.isnull().sum()
 	null_df = pd.DataFrame(null_var)
 	null_df['null_percentage'] = (null_df[0] / len(null_df.index))
@@ -174,7 +181,10 @@ def missing_value_refine(data, per):
 
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
 	deleted_data = deleted_data.drop(['Time'], axis=1)
+	print("Impute Start")
 	result = pd.DataFrame(IterativeImputer(verbose=False).fit_transform(deleted_data))
+	print("Impute End")
+	result.to_csv(filename, index=False)
 	return result
 
 def outlier_processing(data, per):
