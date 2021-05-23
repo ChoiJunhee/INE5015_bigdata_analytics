@@ -64,7 +64,7 @@ def DataAnalytics(file_link):
 	refine3_nl50_list = [refine3_ex20_nl50, refine3_ex30_nl50, refine3_ex40_nl50]
 	refine3_nl60_list = [refine3_ex20_nl60, refine3_ex30_nl60, refine3_ex40_nl60]
 
-	print("=============== REFINE 4 ==============")
+	print("=============== REFINE 3 ==============")
 	print("[결측치 40%]")
 	for i in refine3_nl40_list:
 		print(i.describe())
@@ -83,6 +83,10 @@ def DataAnalytics(file_link):
 
 	print("\n\n\n")
 
+	# outlier 확인 (현재 9개의 데이터 셋)
+	outlier_processing(refine3_ex40_nl60, 123)
+	print("=============== REFINE 4 ==============")
+
 def raw_data_refine(raw_data):
 	# transpose
 	raw_df_stat = raw_data.transpose()
@@ -91,7 +95,7 @@ def raw_data_refine(raw_data):
 	raw_DF_char = raw_data.loc[:, ['Time', 'Pass/Fail']]
 	raw_DF_inte = raw_data.drop(['Time', 'Pass/Fail'], axis=1).add_prefix('F')
 	raw_DF_original = pd.concat([raw_DF_char, raw_DF_inte], axis=1)
-	
+
 	return raw_DF_original
 
 def close_std_zero_remove(raw_df):
@@ -152,6 +156,49 @@ def missing_value_refine(data, per):
 	result = data.drop(null_list, axis=1)
 
 	return result
+
+def outlier_processing(data, per):
+	# 이상치를 제거, 보정하는 기능을 합니다.
+
+	# 데이터 셋에서 Pass와 Fail을 분리함
+	pass_data = data[data['Pass/Fail'] == -1]
+	fail_data = data[data['Pass/Fail'] == 1]
+
+	# 문자 멈춰!
+	col_list = list(data.columns)
+	col_list.remove('Pass/Fail')
+
+	#시각화 자료가 필요합니다.
+
+	#IQR Return
+
+def outlier_delete(data, per):
+	#IQR을 기반으로 일정 percent가 넘는 이상치를 가지는 Feature를 제거
+	pass
+
+def data_scaling(data, num):
+	# number에 맞는 스케일링을 시작
+	pass
+
+def feature_selection(data, num):
+	# number에 맞는 Feature Selection을 진행 후 결과 리턴
+	pass
+
+def data_oversampling(data, num):
+	# number에 맞는 over sampling을 진행 후 결과 리턴
+	pass
+
+
+# 이건 데이터 모델링 과정에서 할 것
+def data_modeling():
+	# 부스팅, 베깅 등등
+	# 하이퍼 파라미터 튜닝
+	# gridSearchCV() 등 여러 기능 활용
+	# 테스트 데이터셋 제작
+	# 검증
+	pass
+
+
 
 DataAnalytics('./uci-secom.csv')
 
