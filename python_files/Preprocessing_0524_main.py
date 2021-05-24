@@ -59,7 +59,8 @@ def DataAnalytics(file_link):
 
 	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
 	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
-	# Feature Selection에서도... 엄청나게... 오래 걸릴듯... ㅠㅠ
+	# 현재 아래 과정에 따른 데이터 파일이 완성되어 있어 raw ~ refine3 의 코드는 수정할 수 없습니다.
+	# 수정하려면 데이터 파일의 이름을 변경하여 사용하시길 바랍니다.
 	refine3_ex20_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.4)
 	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n50", refine2_ex20, 0.5)
 	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n60", refine2_ex20, 0.6)
@@ -77,18 +78,18 @@ def DataAnalytics(file_link):
 	refine3_nl60_list = [refine3_ex20_nl60, refine3_ex30_nl60, refine3_ex40_nl60]
 
 	print("=============== REFINE 3 ==============")
-	print("[결측치 40%]")
+	print("[결측치 40% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl40_list:
 		print(i.describe())
 		print()
 	print("\n\n")
-	print("[결측치 50%]")
+	print("[결측치 50% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl50_list:
 		print(i.describe())
 		print()
 
 	print("\n\n")
-	print("[결측치 60%]")
+	print("[결측치 60% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl60_list:
 		print(i.describe())
 		print()
@@ -108,6 +109,7 @@ def DataAnalytics(file_link):
 		refine4_nl50_list.append(outlier_processing(i, 0))
 	for i in refine3_nl60_list:
 		refine4_nl60_list.append(outlier_processing(i, 0))
+	
 	print("=============== REFINE 4 ==============")
 
 def raw_data_refine(raw_data):
@@ -175,6 +177,7 @@ def missing_value_refine(name, data, per):
 	filename = path + str('.csv')
 	if os.path.isfile(filename):
 		imputed_data = pd.read_csv(filename)
+		imputed_data = imputed_data.drop(imputed_data.describe().columns[0], axis=1)
 		return imputed_data
 	null_var = data.isnull().sum()
 	null_df = pd.DataFrame(null_var)
@@ -184,12 +187,16 @@ def missing_value_refine(name, data, per):
 	deleted_data = data.drop(null_list, axis=1)
 
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
-	deleted_data = deleted_data.drop(['Time'], axis=1)
+	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)[1:]
+	save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
+	imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
+
 	print("Impute Start")
-	result = pd.DataFrame(IterativeImputer(verbose=False).fit_transform(deleted_data))
+	imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(imp_data), columns=save_cols[2:])
+	processed_df = pd.concat([save_char_df, imputed_df], axis=1)
 	print("Impute End")
-	result.to_csv(filename, index=False)
-	return result
+	processed_df.to_csv(filename)
+	return processed_df
 
 def outlier_processing(data, per):
 	# 이상치를 제거, 보정하는 기능을 합니다.
