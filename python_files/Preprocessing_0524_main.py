@@ -207,8 +207,8 @@ def outlier_processing(data, per):
 	col_list.remove('Pass/Fail')
 
 	pass_corr = pass_data.corr()
-	visual = sns.clustermap(pass_corr, annot=True, cmap='RdYlBu_r', vmin=-1, vmax=1)
-	print(visual)
+	fail_corr = corr_data.corr()
+	#visual = sns.clustermap(pass_corr, cmap='RdYlBu_r', vmin=-1, vmax=1)
 
 	#Seaborn Clustermap 사용시 fastcluster install 해야 합니다. 
 
