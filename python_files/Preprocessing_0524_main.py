@@ -59,7 +59,8 @@ def DataAnalytics(file_link):
 
 	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
 	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
-	# Feature Selection에서도... 엄청나게... 오래 걸릴듯... ㅠㅠ
+	# 현재 아래 과정에 따른 데이터 파일이 완성되어 있어 raw ~ refine3 의 코드는 수정할 수 없습니다.
+	# 수정하려면 데이터 파일의 이름을 변경하여 사용하시길 바랍니다.
 	refine3_ex20_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.4)
 	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n50", refine2_ex20, 0.5)
 	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n60", refine2_ex20, 0.6)
@@ -77,18 +78,18 @@ def DataAnalytics(file_link):
 	refine3_nl60_list = [refine3_ex20_nl60, refine3_ex30_nl60, refine3_ex40_nl60]
 
 	print("=============== REFINE 3 ==============")
-	print("[결측치 40%]")
+	print("[결측치 40% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl40_list:
 		print(i.describe())
 		print()
 	print("\n\n")
-	print("[결측치 50%]")
+	print("[결측치 50% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl50_list:
 		print(i.describe())
 		print()
 
 	print("\n\n")
-	print("[결측치 60%]")
+	print("[결측치 60% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl60_list:
 		print(i.describe())
 		print()
@@ -176,6 +177,7 @@ def missing_value_refine(name, data, per):
 	filename = path + str('.csv')
 	if os.path.isfile(filename):
 		imputed_data = pd.read_csv(filename)
+		imputed_data = imputed_data.drop(imputed_data.describe().columns[0], axis=1)
 		return imputed_data
 	null_var = data.isnull().sum()
 	null_df = pd.DataFrame(null_var)
