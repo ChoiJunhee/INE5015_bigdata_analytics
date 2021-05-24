@@ -108,6 +108,7 @@ def DataAnalytics(file_link):
 		refine4_nl50_list.append(outlier_processing(i, 0))
 	for i in refine3_nl60_list:
 		refine4_nl60_list.append(outlier_processing(i, 0))
+	
 	print("=============== REFINE 4 ==============")
 
 def raw_data_refine(raw_data):
@@ -184,7 +185,7 @@ def missing_value_refine(name, data, per):
 	deleted_data = data.drop(null_list, axis=1)
 
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
-	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns[1:])
+	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)[1:]
 	save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
 	imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
 
