@@ -184,12 +184,16 @@ def missing_value_refine(name, data, per):
 	deleted_data = data.drop(null_list, axis=1)
 
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
-	deleted_data = deleted_data.drop(['Time'], axis=1)
+	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns[1:])
+	save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
+	imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
+
 	print("Impute Start")
-	result = pd.DataFrame(IterativeImputer(verbose=False).fit_transform(deleted_data))
+	imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(imp_data), columns=save_cols[2:])
+	processed_df = pd.concat([save_char_df, imputed_df], axis=1)
 	print("Impute End")
-	result.to_csv(filename, index=False)
-	return result
+	processed_df.to_csv(filename)
+	return processed_df
 
 def outlier_processing(data, per):
 	# 이상치를 제거, 보정하는 기능을 합니다.
