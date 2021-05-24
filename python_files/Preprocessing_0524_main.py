@@ -93,10 +93,7 @@ def DataAnalytics(file_link):
 	for i in refine3_nl60_list:
 		print(i.describe())
 		print()
-
-	print("\n\n\n")
-
-	return;
+	print("\n\n\n\n")
 	
 	# outlier 확인
 	refine4_nl40_list = []
@@ -200,16 +197,20 @@ def missing_value_refine(name, data, per):
 
 def outlier_processing(data, per):
 	# 이상치를 제거, 보정하는 기능을 합니다.
-
+	# Inter Quantile Range 편차를 이용함
 	# 데이터 셋에서 Pass와 Fail을 분리함
-	pass_data = data[data['Pass/Fail'] == -1]
-	fail_data = data[data['Pass/Fail'] == 1]
-
+	pass_data = data[data['Pass/Fail'] == -1].drop(['Time', 'Pass/Fail'], axis=1)
+	fail_data = data[data['Pass/Fail'] == 1].drop(['Time', 'Pass/Fail'], axis=1)
+	total_data = data.drop(['Time', 'Pass/Fail'], axis=1)
 	# 문자 멈춰!
 	col_list = list(data.columns)
 	col_list.remove('Pass/Fail')
 
-	#시각화 자료가 필요합니다.
+	pass_corr = pass_data.corr()
+	visual = sns.clustermap(pass_corr, annot=True, cmap='RdYlBu_r', vmin=-1, vmax=1)
+	print(visual)
+
+	#Seaborn Clustermap 사용시 fastcluster install 해야 합니다. 
 
 	#IQR Return
 
