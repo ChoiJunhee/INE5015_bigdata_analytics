@@ -154,21 +154,24 @@ def DataAnalytics(file_link):
 
 	rf2_filt_all_df = rf2_main_df.loc[:, rf2_all_exclusive]
 	# 69개의 Feature
-
-	rf2_filt30_main_df.to_csv('./rf2_c30_exclusive2_main_features.csv')
-	rf2_filt30_pass_df.to_csv('./rf2_c30_exclusive2_pass_features.csv')
-	rf2_filt30_fail_df.to_csv('./rf2_c30_exclusive2_fail_features.csv')
-	rf2_filt_all_df.to_csv('./rf2_c30_exclusive2_sumset_features.csv')
-	'''
-
-	#test_corr = csv_file.corr()
-	#missing_value_refine('./dd.csv', csv_file, 0.5)
-	#visual = sns.clustermap(test_corr, cmap='RdYlBu_r', vmin=-1, vmax=1)
-	#plt.show()
-	return;
 	
 
-	'''
+	### 결측치 50% 이상인 피쳐 제거한 파일 로드
+	rf2_f30_main = pd.read_csv('./rf2_c30_exclusive2_main_features.csv')
+	rf2_f30_pass = pd.read_csv('./rf2_c30_exclusive2_pass_features.csv')
+	rf2_f30_fail = pd.read_csv('./rf2_c30_exclusive2_fail_features.csv')
+	rf2_f30_all = pd.read_csv('./rf2_c30_exclusive2_sumset_features.csv')
+
+	rf2_f30_m_30_main = missing_value_refine("./rf2_c30_m30_exclusive2_main_features.csv", rf2_f30_main, 0.3)
+	rf2_f30_m_30_pass = missing_value_refine('./rf2_c30_m30_exclusive2_pass_features.csv', rf2_f30_pass, 0.3)
+	rf2_f30_m_30_fail = missing_value_refine('./rf2_c30_m30_exclusive2_fail_features.csv', rf2_f30_fail, 0.3)
+	rf2_f30_m_30_all = missing_value_refine('./rf2_c30_m30_exclusive2_sumset_features.csv', rf2_f30_all, 0.3)
+	
+	####################################################################################
+	##  여기까지 데이터 시각화에 있어 선제했던 데이터 전처리. 시각화 데이터는 0525로 첨부  ##
+	####################################################################################
+	
+	
 	데이터 셋 분석 결과, 유의미한 결과가 나왔고, 중복되지 않는 Feature들을 따로 시각화 해보도록 하겠습니다.
 	# corr_30 : 기존 437 동일
 	[main, pass, fail] 347, 347, 343
@@ -330,7 +333,7 @@ def missing_value_refine(filename, data, per):
 	deleted_data = data.drop(null_list, axis=1)
 
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
-	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)[1:]
+	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)
 	save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
 	imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
 
