@@ -352,9 +352,10 @@ def missing_value_refine(filename, data, per):
 
 	null_list = null_df[null_df['null_percentage'] > per].index
 	deleted_data = data.drop(null_list, axis=1)
-	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)
+	
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
 	try:
+		save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)
 		save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
 		imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
 		print("Impute Start")
@@ -363,6 +364,7 @@ def missing_value_refine(filename, data, per):
 		print("Impute End")
 	except:
 		print("Impute Error - Restart")
+		save_cols = list(deleted_data.describe().columns)
 		imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(deleted_data), columns=save_cols[2:])
 		processed_df = imputed_df
 		print("Impute End")
