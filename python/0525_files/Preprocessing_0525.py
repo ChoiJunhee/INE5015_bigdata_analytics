@@ -13,8 +13,8 @@ from sklearn.impute import IterativeImputer
 # 이제 최적의 전처리 방법을 통해 최적의 데이터셋을 얻으면 됩니다.
 
 def DataAnalytics(file_link):
-	# RAW-DATA : 원본 데이터에서 전처리 용이하도록 수정
-	# REFINE1  : 의미가 없는 표준편차가 0.005 이하인 Feature를 제거
+	# RAW-DATA : raw-data 가공
+	# REFINE1  : 
 	# REFINE2  : 변수 간 상관관계를 분석하여, 수치가 높은 Feature를 제거
 	## Feature간 상관관계가 높으면 회귀분석이 어려워짐.
 	# REFINE3  : 결측치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
@@ -59,40 +59,47 @@ def DataAnalytics(file_link):
 
 
 
-	#원본 데이터 셋과 통계용 데이터 셋을 만듭니다. 
+	#원본 데이터 셋을 받아서 약간의 과정을 거칩니다. 
 	raw_DF_original = pd.read_csv(file_link)
 	raw_DF_statistic = raw_DF_original.describe().transpose()
-
-
 	raw_DF_origin = raw_data_refine(raw_DF_original)
-	print("=============== RAW-DATA ==============")
+
+	# 가공이 수월한 DF, origin을 생성함.
+	print("=============== STEP 0 ==============")
 	print(raw_DF_origin.describe())
 	print("\n\n")
 
-
-	refine1_DF = close_std_zero_remove(raw_DF_origin)
-	print("=============== REFINE 1 ==============")
-	print(refine1_DF.describe())
+	# 의미가 없는 표준편차가 0.005 이하인 Feature를 제거, 그리고 데이터 셋 분리
+	rf1_df = close_std_zero_remove(raw_DF_origin)
+	print("=============== STEP 1 ==============")
+	print(rf1_df.describe())
 	print("\n\n")
 
-	# @param : DataFrame, percentage, abs_num
-	# 상관관계가 높은 Feature 제거
-	refine2_ex20 = correlation_refine(refine1_DF, 0.2, 0.8)
-	refine2_ex30 = correlation_refine(refine1_DF, 0.3, 0.8)
-	refine2_ex40 = correlation_refine(refine1_DF, 0.4, 0.8)
-	print("=============== REFINE 2 ==============")
-	print("[corr 상위 20% 제거]")
-	print(refine2_ex20.describe())
-	print()
-	print("[corr 상위 30% 제거]")
-	print(refine2_ex30.describe())
-	print()
-	print("[corr 상위 40% 제거]")
-	print(refine2_ex40.describe())
+	# Feature간 상관 관계 분석을 위해 데이터셋 분리 후 실험
+	rf2_main_df = rf1_df;
+	rf2_pass_df = rf1_df[rf1_df['Pass/Fail'] == -1]
+	rf2_fail_df = rf1_df[rf1_df['Pass/Fail'] == 1]
+
+
+	rf2_pass_25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
+	rf2_fail_25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
+	rf2_fail_50_df = correlation_refine(rf2_pass_df, 0.5, 0.8)
+	rf2_main_25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
+	rf2_main_50_df = correlation_refine(rf2_pass_df, 0.5, 0.8)
+
+	print("=============== STEP 2 ==============")
+	print("\n[corr 상위 25% 제거]")
+	print(rf2_main_25_df.describe());
+	print(rf2_pass_25_df.describe());
+	print(rf2_fail_25_df.describe());
+	print("\n[corr 상위 50% 제거]")
+	print(rf2_main_50_df.describe());
+	print(rf2_pass_50_df.describe());
+	print(rf2_fail_50_df.describe());
+
 	print("\n\n")
 
-
-
+	return;
 	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
 	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
 	# 현재 아래 과정에 따른 데이터 파일이 완성되어 있어 raw ~ refine3 의 코드는 수정할 수 없습니다.
@@ -113,7 +120,7 @@ def DataAnalytics(file_link):
 	refine3_nl50_list = [refine3_ex20_nl50, refine3_ex30_nl50, refine3_ex40_nl50]
 	refine3_nl60_list = [refine3_ex20_nl60, refine3_ex30_nl60, refine3_ex40_nl60]
 
-	print("=============== REFINE 3 ==============")
+	print("=============== STEP 3 ==============")
 	print("[결측치 40% 이상 Feature 제거 - corr20, corr30, corr40]")
 	for i in refine3_nl40_list:
 		print(i.describe())
@@ -143,7 +150,7 @@ def DataAnalytics(file_link):
 	for i in refine3_nl60_list:
 		refine4_nl60_list.append(outlier_processing(i, 0))
 	
-	print("=============== REFINE 4 ==============")
+	print("=============== STEP 4 ==============")
 	# 아웃라이어에 대한 정보.
 
 
