@@ -18,7 +18,7 @@ def DataAnalytics(file_link):
 	# REFINE2  : 변수 간 상관관계를 분석하여, 수치가 높은 Feature를 제거
 	## Feature간 상관관계가 높으면 회귀분석이 어려워짐.
 	# REFINE3  : 결측치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
-	## 결측치 관련 내용은 지난 발표 2 참고.
+	## 결측치 관련 내용은 지난 발표 2 참고. 결측치 처리 알고리즘을 새로운 하나를 더 적용해볼지 고민중
 	#[진행완료]---------------------------------------------------------------#
 
 	# REFINE4  : 이상치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
@@ -47,6 +47,17 @@ def DataAnalytics(file_link):
 	# REFINE7  : Oversampling (Pass data)
 	
 	# REFINE8  : 마지막 단계 (미정) 
+
+	### 0525 피드백으로 인한 계획 수정
+	### 1. Pass Fail 데이터를 처음부터 분리한다. (pass, fail, all) - 데이터셋 3개
+	### 2. REFINE STEP 1까지는 동일한 과정을 거친다.
+	### 3. 상관관계의 비율의 값은 현재 3개에서 2개 혹은 1개로 수정한다.
+	### 4. 3번 내용은 결과를 시각화 해서 의미를 파악하도록 하겠습니다.
+	### 5. REFINE STEP 2도 3~4과정과 유사하게 진행하겠습니다.
+	### 6. 이상치 확인의 경우 STEP 3 이후 고민하겠습니다. 
+
+
+
 
 	#원본 데이터 셋과 통계용 데이터 셋을 만듭니다. 
 	raw_DF_original = pd.read_csv(file_link)
@@ -133,6 +144,8 @@ def DataAnalytics(file_link):
 		refine4_nl60_list.append(outlier_processing(i, 0))
 	
 	print("=============== REFINE 4 ==============")
+	# 아웃라이어에 대한 정보.
+
 
 def raw_data_refine(raw_data):
 	# transpose
