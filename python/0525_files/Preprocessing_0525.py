@@ -90,6 +90,7 @@ def DataAnalytics(file_link):
 	#rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
 	#rf2_fail_c60_df = correlation_refine(rf2_fail_df, 0.60, 0.8)
 
+	'''
 	##### 여기서부터는 주석 처리해도 됨
 	rf2_main_c30_idx = list(rf2_main_c30_df.describe().columns)
 	rf2_pass_c30_idx = list(rf2_pass_c30_df.describe().columns)
@@ -108,7 +109,7 @@ def DataAnalytics(file_link):
 	rf2_mf_c30_fail_exclsv = sorted([x for x in rf2_fail_c30_idx if x not in rf2_main_c30_idx])
 	rf2_pf_c30_pass_exclsv = sorted([x for x in rf2_pass_c30_idx if x not in rf2_fail_c30_idx])
 	rf2_pf_c30_fail_exclsv = sorted([x for x in rf2_fail_c30_idx if x not in rf2_pass_c30_idx])
-
+	
 	rf2_c30_exc_dict = {
 	'main - pass' : rf2_mp_c30_main_exclsv,
 	'main - fail' : rf2_mf_c30_main_exclsv,
@@ -119,48 +120,54 @@ def DataAnalytics(file_link):
 	}
 	print(rf2_c30_exc_dict)
 	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc_dict.items()]))
-	csv_file.to_csv('./rf2_c30_exclusive_features.csv')
+	csv_file.to_csv('./rf2_c30_exclusive1_features.csv')
 	
 	####################################################################################
 	##  위 내용에서 main-pass + main-fail 과 같이 구분해 main  상호 배타 피쳐 추출 (3회) ##
 	####################################################################################
-	rf2_main_exclusive = sorted(list(set(a+c)))
+	rf2_main_exclusive = sorted(list(set(rf2_mp_c30_main_exclsv+rf2_mf_c30_main_exclsv)))
 	print(rf2_main_exclusive)
 	### FIND 57 EXCLUSIVE FEATURES ###
-	#rf2_c30_main_exc_list = ['F136', 'F144', 'F153', 'F155', 'F156', 'F157', 'F173', 'F175', 'F176', 'F182', 'F198', 'F200', 'F21', 'F218', 'F224', 'F247', 'F248', 'F25', 'F251', 'F255', 'F26', 'F269', 'F27', 'F277', 'F286', 'F290', 'F292', 'F301', 'F302', 'F317', 'F318', 'F32', 'F320', 'F33', 'F331', 'F334', 'F34', 'F35', 'F39', 'F426', 'F438', 'F439', 'F45', 'F473', 'F474', 'F476', 'F492', 'F549', 'F550', 'F551', 'F554', 'F560', 'F578', 'F585', 'F66', 'F70', 'F72']
 
-	rf2_pass_exclusive = sorted(list(set(b+d)))
+	rf2_pass_exclusive = sorted(list(set(rf2_mp_c30_pass_exclsv+rf2_pf_c30_pass_exclsv)))
 	print(rf2_pass_exclusive)
 	### FIND 46 EXCLUSIVE FEATURES ###
-	#rf2_c30_pass_exc_list = ['F117', 'F137', 'F139', 'F159', 'F16', 'F166', 'F170', 'F171', 'F184', 'F185', 'F187', 'F201', 'F206', 'F209', 'F221', 'F222', 'F245', 'F252', 'F267', 'F272', 'F273', 'F274', 'F275', 'F291', 'F295', 'F319', 'F342', 'F345', 'F346', 'F347', 'F356', 'F361', 'F382', 'F383', 'F390', 'F393', 'F4', 'F407', 'F478', 'F496', 'F573', 'F575', 'F577', 'F73', 'F74', 'Pass/Fail']
 	
-	rf2_c30_fail_exclusive = sorted(list(set(c+f)))
+	rf2_fail_exclusive = sorted(list(set(rf2_mf_c30_fail_exclsv+rf2_pf_c30_fail_exclsv)))
 	print(rf2_pass_exclusive)
 	### FIND 53 EXCLUSIVE FEATURES ###
-	#rf2_fail_exc_list = ['F136', 'F153', 'F155', 'F156', 'F157', 'F159', 'F182', 'F198', 'F200', 'F201', 'F21', 'F224', 'F247', 'F248', 'F25', 'F255', 'F26', 'F267', 'F27', 'F273', 'F274', 'F292', 'F302', 'F317', 'F318', 'F319', 'F32', 'F320', 'F33', 'F331', 'F334', 'F34', 'F345', 'F35', 'F356', 'F361', 'F39', 'F426', 'F438', 'F439', 'F45', 'F474', 'F476', 'F492', 'F549', 'F550', 'F551', 'F554', 'F560', 'F578', 'F585', 'F70', 'F72']
 
-	rf2_c30_all_exclusive = sorted(list(set(rf2_main_exclusive + rf2_pass_exclusive + rf2_fail_exclusive)))
+	rf2_all_exclusive = sorted(list(set(rf2_main_exclusive + rf2_pass_exclusive + rf2_fail_exclusive)))
 	print(rf2_pass_exclusive)
 	## FIND 103 Exclusive Features ###
-	#rf2_all_exc_list = ['F117', 'F136', 'F137', 'F139', 'F144', 'F153', 'F155', 'F156', 'F157', 'F159', 'F16', 'F166', 'F170', 'F171', 'F173', 'F175', 'F176', 'F182', 'F184', 'F185', 'F187', 'F198', 'F200', 'F201', 'F206', 'F209', 'F21', 'F218', 'F221', 'F222', 'F224', 'F245', 'F247', 'F248', 'F25', 'F251', 'F252', 'F255', 'F26', 'F267', 'F269', 'F27', 'F272', 'F273', 'F274', 'F275', 'F277', 'F286', 'F290', 'F291', 'F292', 'F295', 'F301', 'F302', 'F317', 'F318', 'F319', 'F32', 'F320', 'F33', 'F331', 'F334', 'F34', 'F342', 'F345', 'F346', 'F347', 'F35', 'F356', 'F361', 'F382', 'F383', 'F39', 'F390', 'F393', 'F4', 'F407', 'F426', 'F438', 'F439', 'F45', 'F473', 'F474', 'F476', 'F478', 'F492', 'F496', 'F549', 'F550', 'F551', 'F554', 'F560', 'F573', 'F575', 'F577', 'F578', 'F585', 'F66', 'F70', 'F72', 'F73', 'F74', 'Pass/Fail']
 
 
 	# 이제 corr_30과 corr_60에서 해당 피쳐들의 DF 추출
-	rf2_filt30_main_df = rf2_main_c30_df.transpose().loc[rf2_main_exc_list]
-	rf2_filt30_pass_df = rf2_main_c30_df.transpose().loc[rf2_pass_exc_list]
-	rf2_filt30_fail_df = rf2_main_c30_df.transpose().loc[rf2_fail_exc_list]
-	rf2_filt_all_df = rf2_main_c30_df.transpose().loc[rf2_all_exc_list]
+	rf2_filt30_main_df = rf2_main_df.loc[:, rf2_main_exclusive]
+	# 37개의 Feature
 
-	print(rf2_filt30_main_df)
-	print(rf2_filt30_pass_df)
-	print(rf2_filt30_fail_df)
-	print(rf2_filt_all_df)
-	
+	rf2_filt30_pass_df = rf2_main_df.loc[:, rf2_pass_exclusive]
+	# 37개의 Feature
+
+	rf2_filt30_fail_df = rf2_main_df.loc[:, rf2_fail_exclusive]
+	# 33개의 Feature
+
+	rf2_filt_all_df = rf2_main_df.loc[:, rf2_all_exclusive]
+	# 69개의 Feature
+
+	rf2_filt30_main_df.to_csv('./rf2_c30_exclusive2_main_features.csv')
+	rf2_filt30_pass_df.to_csv('./rf2_c30_exclusive2_pass_features.csv')
+	rf2_filt30_fail_df.to_csv('./rf2_c30_exclusive2_fail_features.csv')
+	rf2_filt_all_df.to_csv('./rf2_c30_exclusive2_sumset_features.csv')
+	'''
+
 	#test_corr = csv_file.corr()
 	#missing_value_refine('./dd.csv', csv_file, 0.5)
 	#visual = sns.clustermap(test_corr, cmap='RdYlBu_r', vmin=-1, vmax=1)
 	#plt.show()
 	return;
+	
+
 	'''
 	데이터 셋 분석 결과, 유의미한 결과가 나왔고, 중복되지 않는 Feature들을 따로 시각화 해보도록 하겠습니다.
 	# corr_30 : 기존 437 동일
