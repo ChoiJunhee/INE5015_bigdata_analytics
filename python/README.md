@@ -17,9 +17,9 @@ _Unorganized files are temporary files and are moved to the appropriate folder a
 
 ## 폴더 내용
 
-각 폴더 별로 구체적인 변경 사항을 기록할 예정입니다.
+각 폴더 별로 구체적인 변경 사항을 기록할 예정입니다. *(6월 초 예정)
 
-_i will record specific changes for each folder._
+_i will record specific changes for each folder. *(Planned in early June)_
 
 ---
 
