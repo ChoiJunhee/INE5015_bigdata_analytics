@@ -80,55 +80,83 @@ def DataAnalytics(file_link):
 	rf2_pass_df = rf1_df[rf1_df['Pass/Fail'] == -1]
 	rf2_fail_df = rf1_df[rf1_df['Pass/Fail'] == 1]
 
-	# 여러 테스트, 여러 시각화를 통해 확인한 결과,
-	# 세 데이터 셋 모두 20%, 25%, 50%, 30%, 40%에서 데이터 셋간 차이는 없었음
-	rf2_main_c25_df = correlation_refine(rf2_main_df, 0.25, 0.8)
-	rf2_pass_c25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
-	rf2_fail_c25_df = correlation_refine(rf2_fail_df, 0.25, 0.8)
+	# 상관관계 분석, 제거와 보정 작업
+	# 세 개의 데이터 셋에서 Fail Feature만 변화가 있었음.
+	rf2_main_c30_df = correlation_refine(rf2_main_df, 0.30, 0.8)
+	rf2_pass_c30_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
+	rf2_fail_c30_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
+	#rf2_main_c60_df = correlation_refine(rf2_main_df, 0.60, 0.8)
+	#rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
+	rf2_fail_c60_df = correlation_refine(rf2_fail_df, 0.60, 0.8)
 
-	rf2_main_c50_df = correlation_refine(rf2_main_df, 0.5, 0.8)
-	rf2_pass_c50_df = correlation_refine(rf2_pass_df, 0.5, 0.8)
-	rf2_fail_c50_df = correlation_refine(rf2_fail_df, 0.5, 0.8)
+	print(rf2_main_c30_df.describe())
+	print(rf2_pass_c30_df.describe())
+	print(rf2_fail_c30_df.describe())
+
+	rf2_main_c30_idx = list(rf2_main_c30_df.describe().columns)
+	rf2_pass_c30_idx = list(rf2_pass_c30_df.describe().columns)
+	rf2_fail_c30_idx = list(rf2_fail_c30_df.describe().columns)
+
+	c30_main_pass_same = list(set(rf2_main_c30_idx).intersection(rf2_pass_c30_idx))
+	c30_main_fail_same = list(set(rf2_main_c30_idx).intersection(rf2_fail_c30_idx))
+	c30_pass_fail_same = list(set(rf2_fail_c30_idx).intersection(rf2_pass_c30_idx))
+	print(len(c30_main_pass_same))
+	print(len(c30_main_fail_same))
+	print(len(c30_pass_fail_same))
+
 
 	print("=============== STEP 2 ==============")
-	print("main")
-	print(rf2_main_c25_df.transpose().describe())
-	print("pass")
-	print(rf2_pass_c25_df.transpose().describe())
-	print("fail")
-	print(rf2_fail_c25_df.transpose().describe())
-	print()
-	print("main")
-	print(rf2_main_c50_df.transpose().describe())
-	print("pass")
-	print(rf2_pass_c50_df.transpose().describe())
-	print("fail")
-	print(rf2_fail_c50_df.transpose().describe())
-
-
+	'''
+	print("\nmain : ")
+	print(rf2_main_c30_df.describe())
+	print("\n\npass : ")
+	print(rf2_pass_c30_df.describe())
+	print("\n\nfail : ")
+	print(rf2_fail_c30_df.describe())
+	print("\nmain : ")
+	print(rf2_main_c60_df.describe())
+	print("\n\npass : ")
+	print(rf2_pass_c60_df.describe())
+	print("\n\nfail : ")
+	print(rf2_fail_c60_df.describe())
+	'''
 	print("\n\n")
+
+
 
 	return;
+	# 프로젝트 편의를 위해 데이터 저장
+	rf2_main_c30_df.to_csv('./rf2_main_c30.csv')
+	rf2_pass_c30_df.to_csv('./rf2_pass_c30.csv')
+	rf2_fail_c30_df.to_csv('./rf2_fail_c30.csv')
+	rf2_main_c60_df.to_csv('./rf2_main_c60.csv')
+	rf2_pass_c60_df.to_csv('./rf2_pass_c60.csv')
+	rf2_fail_c60_df.to_csv('./rf2_fail_c60.csv')
 
+	#transpose
+	rf2_main_c30_df = rf2_main_c30_df.describe()
+	rf2_pass_c30_df = rf2_pass_c30_df.describe()
+	rf2_fail_c30_df = rf2_fail_c30_df.describe()
+
+	return;
 	# 결측치 제거와 보정
-	rf2_main_c25_m40 = missing_value_refine(rf2_main_df)
+	rf3_main_c30_m40 = missing_value_refine("./rf2_main_c25_df.csv", rf2_main_c25_df, 0.4)
+	rf3_pass_c30_m40 = missing_value_refine("./rf2_pass_c25_df.csv", rf2_pass_c25_df, 0.4)
+	rf3_fail_c30_m40 = missing_value_refine("./rf2_fail_c25_df.csv", rf2_fail_c25_df, 0.4)
+
+	rf3_main_c30_m60 = missing_value_refine("./rf2_main_c25_df.csv", rf2_main_c25_df, 0.6)
+	rf3_pass_c30_m60 = missing_value_refine("./rf2_pass_c25_df.csv", rf2_pass_c25_df, 0.6)
+	rf3_fail_c30_m60 = missing_value_refine("/rf2_fail_c25_df.csv", rf2_fail_c25_df, 0.6)
 
 	print("=============== STEP 3 ==============")
-	print("[결측치 40% 이상 Feature 제거 - corr20, corr30, corr40]")
-	for i in refine3_nl40_list:
-		print(i.describe())
-		print()
-	print("\n\n")
-	print("[결측치 50% 이상 Feature 제거 - corr20, corr30, corr40]")
-	for i in refine3_nl50_list:
-		print(i.describe())
-		print()
+	print(rf3_main_c25_m40.describe())
+	print(rf3_pass_c25_m40.describe())
+	print(rf3_fail_c25_m40.describe())
+	print()
+	print(rf3_main_c25_m60.describe())
+	print(rf3_pass_c25_m60.describe())
+	print(rf3_fail_c25_m60.describe())
 
-	print("\n\n")
-	print("[결측치 60% 이상 Feature 제거 - corr20, corr30, corr40]")
-	for i in refine3_nl60_list:
-		print(i.describe())
-		print()
 	print("\n\n\n\n")
 	
 	# outlier 확인
@@ -206,14 +234,13 @@ def correlation_refine(data, per, abs_num):
 	result = data.drop(extract, axis=1)
 	return result
 
-def missing_value_refine(name, data, per):
+def missing_value_refine(filename, data, per):
 	# 퍼센트에 따른 결측치 상위 Feature 제거
-	path = './' + str(name)
-	filename = path + str('.csv')
 	if os.path.isfile(filename):
 		imputed_data = pd.read_csv(filename)
 		imputed_data = imputed_data.drop(imputed_data.describe().columns[0], axis=1)
 		return imputed_data
+	
 	null_var = data.isnull().sum()
 	null_df = pd.DataFrame(null_var)
 	null_df['null_percentage'] = (null_df[0] / len(null_df.index))
