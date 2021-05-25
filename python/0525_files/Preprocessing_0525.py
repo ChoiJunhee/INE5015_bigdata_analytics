@@ -80,45 +80,38 @@ def DataAnalytics(file_link):
 	rf2_pass_df = rf1_df[rf1_df['Pass/Fail'] == -1]
 	rf2_fail_df = rf1_df[rf1_df['Pass/Fail'] == 1]
 
+	# 여러 테스트, 여러 시각화를 통해 확인한 결과,
+	# 세 데이터 셋 모두 20%, 25%, 50%, 30%, 40%에서 데이터 셋간 차이는 없었음
+	rf2_main_c25_df = correlation_refine(rf2_main_df, 0.25, 0.8)
+	rf2_pass_c25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
+	rf2_fail_c25_df = correlation_refine(rf2_fail_df, 0.25, 0.8)
 
-	rf2_pass_25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
-	rf2_fail_25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
-	rf2_fail_50_df = correlation_refine(rf2_pass_df, 0.5, 0.8)
-	rf2_main_25_df = correlation_refine(rf2_pass_df, 0.25, 0.8)
-	rf2_main_50_df = correlation_refine(rf2_pass_df, 0.5, 0.8)
+	rf2_main_c50_df = correlation_refine(rf2_main_df, 0.5, 0.8)
+	rf2_pass_c50_df = correlation_refine(rf2_pass_df, 0.5, 0.8)
+	rf2_fail_c50_df = correlation_refine(rf2_fail_df, 0.5, 0.8)
 
 	print("=============== STEP 2 ==============")
-	print("\n[corr 상위 25% 제거]")
-	print(rf2_main_25_df.describe());
-	print(rf2_pass_25_df.describe());
-	print(rf2_fail_25_df.describe());
-	print("\n[corr 상위 50% 제거]")
-	print(rf2_main_50_df.describe());
-	print(rf2_pass_50_df.describe());
-	print(rf2_fail_50_df.describe());
+	print("main")
+	print(rf2_main_c25_df.transpose().describe())
+	print("pass")
+	print(rf2_pass_c25_df.transpose().describe())
+	print("fail")
+	print(rf2_fail_c25_df.transpose().describe())
+	print()
+	print("main")
+	print(rf2_main_c50_df.transpose().describe())
+	print("pass")
+	print(rf2_pass_c50_df.transpose().describe())
+	print("fail")
+	print(rf2_fail_c50_df.transpose().describe())
+
 
 	print("\n\n")
 
 	return;
-	# 결측치 제거 (이 부분도 리팩토링 하도록 하겠습니다.)
-	# 결측치 보정 과정에서 시간이 너무 오래 걸려 계산해둔 파일을 쓰는 방식으로 변경
-	# 현재 아래 과정에 따른 데이터 파일이 완성되어 있어 raw ~ refine3 의 코드는 수정할 수 없습니다.
-	# 수정하려면 데이터 파일의 이름을 변경하여 사용하시길 바랍니다.
-	refine3_ex20_nl40 = missing_value_refine("rf3_e20_n40", refine2_ex20, 0.4)
-	refine3_ex20_nl50 = missing_value_refine("rf3_e20_n50", refine2_ex20, 0.5)
-	refine3_ex20_nl60 = missing_value_refine("rf3_e20_n60", refine2_ex20, 0.6)
-	
-	refine3_ex30_nl40 = missing_value_refine("rf3_e30_n40", refine2_ex30, 0.4)
-	refine3_ex30_nl50 = missing_value_refine("rf3_e30_n50", refine2_ex30, 0.5)
-	refine3_ex30_nl60 = missing_value_refine("rf3_e30_n60", refine2_ex30, 0.6)
-	
-	refine3_ex40_nl40 = missing_value_refine("rf3_e40_n40", refine2_ex40, 0.4)
-	refine3_ex40_nl50 = missing_value_refine("rf3_e40_n50", refine2_ex40, 0.5)
-	refine3_ex40_nl60 = missing_value_refine("rf3_e40_n60", refine2_ex40, 0.6)
 
-	refine3_nl40_list = [refine3_ex20_nl40, refine3_ex30_nl40, refine3_ex40_nl40]
-	refine3_nl50_list = [refine3_ex20_nl50, refine3_ex30_nl50, refine3_ex40_nl50]
-	refine3_nl60_list = [refine3_ex20_nl60, refine3_ex30_nl60, refine3_ex40_nl60]
+	# 결측치 제거와 보정
+	rf2_main_c25_m40 = missing_value_refine(rf2_main_df)
 
 	print("=============== STEP 3 ==============")
 	print("[결측치 40% 이상 Feature 제거 - corr20, corr30, corr40]")
