@@ -72,6 +72,7 @@ def DataAnalytics(file_link):
 	# 의미가 없는 표준편차가 0.005 이하인 Feature를 제거, 그리고 데이터 셋 분리
 	rf1_df = close_std_zero_remove(raw_DF_origin)
 	print("=============== STEP 1 ==============")
+	print(rf1_df.describe())
 	print("\n\n")
 
 	# Feature간 상관 관계 분석을 위해 데이터셋 분리 후 실험
@@ -82,23 +83,42 @@ def DataAnalytics(file_link):
 	# 상관관계 분석, 이후 세 개의 데이터 셋에서의 배타적인 피쳐 분석
 	# 세 개의 데이터 셋에서 피쳐의 개수 변화는 Fail만 변화가 있었음.
 	# 실행 결과는 주석으로 남기며, 실제 사용시에는 print 문을 모두 주석 처리해야 함.
-	rf2_main_c30_df = correlation_refine(rf2_main_df, 0.30, 0.8)
-	rf2_pass_c30_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
-	rf2_fail_c30_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
-
-	#rf2_main_c60_df = correlation_refine(rf2_main_df, 0.60, 0.8)
-	#rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
-	#rf2_fail_c60_df = correlation_refine(rf2_fail_df, 0.60, 0.8)
+	rf2_c30_main_df = correlation_refine(rf2_main_df, 0.30, 0.8)
+	rf2_c30_pass_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
+	rf2_c30_fail_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
 
 	'''
-	##### 여기서부터는 주석 처리해도 됨
-	rf2_main_c30_idx = list(rf2_main_c30_df.describe().columns)
-	rf2_pass_c30_idx = list(rf2_pass_c30_df.describe().columns)
-	rf2_fail_c30_idx = list(rf2_fail_c30_df.describe().columns)
+	####################################################################################
+	## | 데이터 분석 결과, 유의미한 편차가 있었고, 상호배타성 피쳐를 추출하는 과정입니다.   ##
+	####################################################################################
 
-	c30_main_pass_same = list(set(rf2_main_c30_idx).intersection(rf2_pass_c30_idx))
-	c30_main_fail_same = list(set(rf2_main_c30_idx).intersection(rf2_fail_c30_idx))
-	c30_pass_fail_same = list(set(rf2_fail_c30_idx).intersection(rf2_pass_c30_idx))
+	----------------------------------------------------------
+	# corr_30 : 기존 437 동일
+	[main, pass, fail] 347, 347, 343
+
+	[main-pass] 342 중복 / main 5, pass 5
+	[main-fail] = 313 중복 / main 34, fail 31
+	[pass-fail] = 312 중복 / pass 35, fail 31
+	중복되지 않는 feature들 *(중복포함 141개)
+	----------------------------------------------------------
+	# corr_60 : 기존 437 동일
+	[main, pass, fail] 256, 256, 249
+
+	[main-pass] 237 중복 / main 19, pass 19
+	[main-fail] 208 중복 / main 48, fail 41
+	[pass-fail] 203 중복 / pass 53, fail 64
+	----------------------------------------------------------
+	corr 상위 30%과 60%에도 차이가 있었으나, 큰 차이가 없어 30% 사용
+	----------------------------------------------------------
+	
+
+	rf2_main_c30_idx = list(rf2_c30_main_df.describe().columns)
+	rf2_pass_c30_idx = list(rf2_c30_pass_df.describe().columns)
+	rf2_fail_c30_idx = list(rf2_c30_fail_df.describe().columns)
+
+	c30_main_pass_same = list(set(rf2_c30_main_df).intersection(rf2_c30_pass_df))
+	c30_main_fail_same = list(set(rf2_c30_main_df).intersection(rf2_c30_fail_df))
+	c30_pass_fail_same = list(set(rf2_c30_fail_df).intersection(rf2_c30_pass_df))
 
 	####################################################################################
 	## | main - pass | main - fail | pass - fail | 3개 유형에서 상호 배타인 피쳐 추출   ##
@@ -120,126 +140,127 @@ def DataAnalytics(file_link):
 	}
 	print(rf2_c30_exc_dict)
 	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc_dict.items()]))
-	csv_file.to_csv('./rf2_c30_exclusive1_features.csv')
+	csv_file.to_csv('./rf2_c30_exc10.csv')
 	
 	####################################################################################
 	##  위 내용에서 main-pass + main-fail 과 같이 구분해 main  상호 배타 피쳐 추출 (3회) ##
 	####################################################################################
 	rf2_main_exclusive = sorted(list(set(rf2_mp_c30_main_exclsv+rf2_mf_c30_main_exclsv)))
-	print(rf2_main_exclusive)
+	#print(rf2_main_exclusive)
 	### FIND 57 EXCLUSIVE FEATURES ###
 
 	rf2_pass_exclusive = sorted(list(set(rf2_mp_c30_pass_exclsv+rf2_pf_c30_pass_exclsv)))
-	print(rf2_pass_exclusive)
+	#print(rf2_pass_exclusive)
 	### FIND 46 EXCLUSIVE FEATURES ###
 	
 	rf2_fail_exclusive = sorted(list(set(rf2_mf_c30_fail_exclsv+rf2_pf_c30_fail_exclsv)))
-	print(rf2_pass_exclusive)
+	#print(rf2_pass_exclusive)
 	### FIND 53 EXCLUSIVE FEATURES ###
 
 	rf2_all_exclusive = sorted(list(set(rf2_main_exclusive + rf2_pass_exclusive + rf2_fail_exclusive)))
-	print(rf2_pass_exclusive)
+	#print(rf2_pass_exclusive)
 	## FIND 103 Exclusive Features ###
 
 
-	# 이제 corr_30과 corr_60에서 해당 피쳐들의 DF 추출
-	rf2_filt30_main_df = rf2_main_df.loc[:, rf2_main_exclusive]
+	# 피쳐뽑기
+	rf2_c30_exc20_main = rf2_main_df.loc[:, rf2_main_exclusive]
+	rf2_c30_exc20_pass = rf2_main_df.loc[:, rf2_pass_exclusive]
+	rf2_c30_exc20_fail = rf2_main_df.loc[:, rf2_fail_exclusive]
+	rf2_c30_exc20_all = rf2_main_df.loc[:, rf2_all_exclusive]
+
 	# 37개의 Feature
+	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc20_main.items()]))
+	csv_file.to_csv('./rf2_c30_exc20_main.csv')
 
 	rf2_filt30_pass_df = rf2_main_df.loc[:, rf2_pass_exclusive]
 	# 37개의 Feature
+	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc20_pass.items()]))
+	csv_file.to_csv('./rf2_c30_exc20_pass.csv')
 
 	rf2_filt30_fail_df = rf2_main_df.loc[:, rf2_fail_exclusive]
 	# 33개의 Feature
+	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc20_fail.items()]))
+	csv_file.to_csv('./rf2_c30_exc20_fail.csv')
 
 	rf2_filt_all_df = rf2_main_df.loc[:, rf2_all_exclusive]
 	# 69개의 Feature
+	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc20_all.items()]))
+	csv_file.to_csv('./rf2_c30_exc20_sumset.csv')
 	
-
-	### 결측치 50% 이상인 피쳐 제거한 파일 로드
-	rf2_f30_main = pd.read_csv('./rf2_c30_exclusive2_main_features.csv')
-	rf2_f30_pass = pd.read_csv('./rf2_c30_exclusive2_pass_features.csv')
-	rf2_f30_fail = pd.read_csv('./rf2_c30_exclusive2_fail_features.csv')
-	rf2_f30_all = pd.read_csv('./rf2_c30_exclusive2_sumset_features.csv')
-
-	rf2_f30_m_30_main = missing_value_refine("./rf2_c30_m30_exclusive2_main_features.csv", rf2_f30_main, 0.3)
-	rf2_f30_m_30_pass = missing_value_refine('./rf2_c30_m30_exclusive2_pass_features.csv', rf2_f30_pass, 0.3)
-	rf2_f30_m_30_fail = missing_value_refine('./rf2_c30_m30_exclusive2_fail_features.csv', rf2_f30_fail, 0.3)
-	rf2_f30_m_30_all = missing_value_refine('./rf2_c30_m30_exclusive2_sumset_features.csv', rf2_f30_all, 0.3)
 	
 	####################################################################################
 	##  여기까지 데이터 시각화에 있어 선제했던 데이터 전처리. 시각화 데이터는 0525로 첨부  ##
 	####################################################################################
-	
-	
-	데이터 셋 분석 결과, 유의미한 결과가 나왔고, 중복되지 않는 Feature들을 따로 시각화 해보도록 하겠습니다.
-	# corr_30 : 기존 437 동일
-	[main, pass, fail] 347, 347, 343
-
-	[main-pass] 342 중복 / main 5, pass 5
-	[main-fail] = 313 중복 / main 34, fail 31
-	[pass-fail] = 312 중복 / pass 35, fail 31
-	중복되지 않는 feature들 *(중복포함 141개)
-
-	# corr_60 : 기존 437 동일
-	[main, pass, fail] 256, 256, 249
-
-	[main-pass] 237 중복 / main 19, pass 19
-	[main-fail] 208 중복 / main 48, fail 41
-	[pass-fail] 203 중복 / pass 53, fail 64
 	'''
+	
+	rf2_c30_main_df = correlation_refine(rf2_main_df, 0.30, 0.8)
+	rf2_c30_pass_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
+	rf2_c30_fail_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
 
 	print("=============== STEP 2 ==============")
-	'''
 	print("\nmain : ")
-	print(rf2_main_c30_df.describe())
+	print(rf2_c30_main_df.describe())
 	print("\n\npass : ")
-	print(rf2_pass_c30_df.describe())
+	print(rf2_c30_pass_df.describe())
 	print("\n\nfail : ")
-	print(rf2_fail_c30_df.describe())
-	print("\nmain : ")
-	print(rf2_main_c60_df.describe())
-	print("\n\npass : ")
-	print(rf2_pass_c60_df.describe())
-	print("\n\nfail : ")
-	print(rf2_fail_c60_df.describe())
-	'''
+	print(rf2_c30_fail_df.describe())
 	print("\n\n")
 
 
-
-	return;
 	# 프로젝트 편의를 위해 데이터 저장
-	rf2_main_c30_df.to_csv('./rf2_main_c30.csv')
-	rf2_pass_c30_df.to_csv('./rf2_pass_c30.csv')
-	rf2_fail_c30_df.to_csv('./rf2_fail_c30.csv')
-	rf2_main_c60_df.to_csv('./rf2_main_c60.csv')
-	rf2_pass_c60_df.to_csv('./rf2_pass_c60.csv')
-	rf2_fail_c60_df.to_csv('./rf2_fail_c60.csv')
+	rf2_c30_main_df.to_csv('./rf2_c30_main.csv')
+	rf2_c30_pass_df.to_csv('./rf2_c30_pass.csv')
+	rf2_c30_fail_df.to_csv('./rf2_c30_fail.csv')
 
-	#transpose
-	rf2_main_c30_df = rf2_main_c30_df.describe()
-	rf2_pass_c30_df = rf2_pass_c30_df.describe()
-	rf2_fail_c30_df = rf2_fail_c30_df.describe()
+	### 계산된 파일 불러오기
+	rf2_f30_main = pd.read_csv('./rf2_c30_exc20_main.csv')
+	rf2_f30_pass = pd.read_csv('./rf2_c30_exc20_pass.csv')
+	rf2_f30_fail = pd.read_csv('./rf2_c30_exc20_fail.csv')
+	rf2_f30_all = pd.read_csv('./rf2_c30_exc20_sumset.csv')
 
-	return;
+	# 퍼센트에 따른 결측치 상위 Feature 제거
+	# 이미 파일이 존재하면 수행하지 않음
+	if(os.path.isfile('./rf3_c30_exc30_m30_main')):
+		rf3_f30_main = pd.read_csv('./rf3_c30_exc30_m30_main.csv')
+		rf3_f30_pass = pd.read_csv('./rf3_c30_exc30_m30_pass.csv')
+		rf3_f30_fail = pd.read_csv('./rf3_c30_exc30_m30_fail.csv')
+		rf3_f30_all = pd.read_csv('./rf3_c30_exc30_m30_sumset.csv')
+	else:
+		# 결측치 처리 (STEP2 데이터의 피쳐들이 매우 적어 결측치 필터 기준을 높였습니다)
+		rf3_f30_m30_main = missing_value_refine("./rf3_c30_exc30_m30_main.csv", rf2_f30_main, 0.3)
+		rf3_f30_m30_pass = missing_value_refine('./rf3_c30_exc30_m30_pass.csv', rf2_f30_pass, 0.3)
+		rf3_f30_m30_fail = missing_value_refine('./rf3_c30_exc30_m30_fail.csv', rf2_f30_fail, 0.3)
+		rf3_f30_m30_all = missing_value_refine('./rf3_c30_exc30_m30_sumset.csv', rf2_f30_all, 0.3)
+	
 	# 결측치 제거와 보정
-	rf3_main_c30_m40 = missing_value_refine("./rf2_main_c25_df.csv", rf2_main_c25_df, 0.4)
-	rf3_pass_c30_m40 = missing_value_refine("./rf2_pass_c25_df.csv", rf2_pass_c25_df, 0.4)
-	rf3_fail_c30_m40 = missing_value_refine("./rf2_fail_c25_df.csv", rf2_fail_c25_df, 0.4)
+	# 이미 파일이 존재하면 수행하지 않음
+	## 40%, 60% 의 차이를 구별하기 위해 시각화 필요
+	if(os.path.isfile('./rf3_c30_m40_main.csv')):
+		rf3_c30_m40_main = pd.read_csv('./rf3_c30_m40_main.csv')
+		rf3_c30_m40_pass = pd.read_csv('./rf3_c30_m40_pass.csv')
+		rf3_c30_m40_fail = pd.read_csv('./rf3_c30_m40_fail.csv')
+	else:
+		rf3_c30_m40_main = missing_value_refine("./rf3_c30_m40_main.csv", rf2_c30_main_df, 0.4)
+		rf3_c30_m40_pass = missing_value_refine("./rf3_c30_m40_pass.csv", rf2_c30_pass_df, 0.4)
+		rf3_c30_m40_fail = missing_value_refine("./rf3_c30_m40_fail.csv", rf2_c30_fail_df, 0.4)
 
-	rf3_main_c30_m60 = missing_value_refine("./rf2_main_c25_df.csv", rf2_main_c25_df, 0.6)
-	rf3_pass_c30_m60 = missing_value_refine("./rf2_pass_c25_df.csv", rf2_pass_c25_df, 0.6)
-	rf3_fail_c30_m60 = missing_value_refine("/rf2_fail_c25_df.csv", rf2_fail_c25_df, 0.6)
+	if(os.path.isfile('./rf3_c30_m40_main.csv')):
+		rf3_c30_m40_main = pd.read_csv('./rf3_c30_m40_main.csv')
+		rf3_c30_m40_pass = pd.read_csv('./rf3_c30_m40_pass.csv')
+		rf3_c30_m40_fail = pd.read_csv('./rf3_c30_m40_fail.csv')
+	else:
+		rf3_c30_m60_main = missing_value_refine("./rf3_c30_m60_main.csv", rf2_c30_main_df, 0.6)
+		rf3_c30_m60_pass = missing_value_refine("./rf3_c30_m60_pass.csv", rf2_c30_pass_df, 0.6)
+		rf3_c30_m60_fail = missing_value_refine("./rf3_c30_m60_fail.csv", rf2_c30_fail_df, 0.6)
 
 	print("=============== STEP 3 ==============")
-	print(rf3_main_c25_m40.describe())
-	print(rf3_pass_c25_m40.describe())
-	print(rf3_fail_c25_m40.describe())
+	print(rf3_c30_m40_main.describe())
+	print(rf3_c30_m40_pass.describe())
+	print(rf3_c30_m40_fail.describe())
 	print()
-	print(rf3_main_c25_m60.describe())
-	print(rf3_pass_c25_m60.describe())
-	print(rf3_fail_c25_m60.describe())
+	print(rf3_c30_m60_main.describe())
+	print(rf3_c30_m60_pass.describe())
+	print(rf3_c30_m60_fail.describe())
 
 	print("\n\n\n\n")
 	
@@ -331,16 +352,21 @@ def missing_value_refine(filename, data, per):
 
 	null_list = null_df[null_df['null_percentage'] > per].index
 	deleted_data = data.drop(null_list, axis=1)
-
-	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
 	save_cols = ["Time", "Pass/Fail"] + list(deleted_data.describe().columns)
-	save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
-	imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
+	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
+	try:
+		save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
+		imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
+		print("Impute Start")
+		imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(imp_data), columns=save_cols[2:])
+		processed_df = pd.concat([save_char_df, imputed_df], axis=1)
+		print("Impute End")
+	except:
+		print("Impute Error - Restart")
+		imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(deleted_data), columns=save_cols[2:])
+		processed_df = imputed_df
+		print("Impute End")
 
-	print("Impute Start")
-	imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(imp_data), columns=save_cols[2:])
-	processed_df = pd.concat([save_char_df, imputed_df], axis=1)
-	print("Impute End")
 	processed_df.to_csv(filename)
 	return processed_df
 
