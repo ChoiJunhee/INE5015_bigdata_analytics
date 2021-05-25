@@ -13,14 +13,39 @@ from sklearn.impute import IterativeImputer
 # 이제 최적의 전처리 방법을 통해 최적의 데이터셋을 얻으면 됩니다.
 
 def DataAnalytics(file_link):
-	# RAW-DATA : 원본 데이터에서 필요한 데이터만 분리.
+	# RAW-DATA : 원본 데이터에서 전처리 용이하도록 수정
 	# REFINE1  : 의미가 없는 표준편차가 0.005 이하인 Feature를 제거
 	# REFINE2  : 변수 간 상관관계를 분석하여, 수치가 높은 Feature를 제거
+	## Feature간 상관관계가 높으면 회귀분석이 어려워짐.
 	# REFINE3  : 결측치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
+	## 결측치 관련 내용은 지난 발표 2 참고.
+	#[진행완료]---------------------------------------------------------------#
+
 	# REFINE4  : 이상치 비율에 따라 일정 비율 이상 Feature 제거 및 보정
+	## 이상탐지 기법은 Clustering과 Classification 기반이 있다.
+	## 여기서 나는 이상치를 탐지하기 전에, 효율성을 위해 상관관계 분석을 한번 하고 싶다.
+	## (사진 자료) REFINE2 를 거친 데이터들은 그렇게 높은 상관관계가 없으나,
+	## (사진 자료) Pass / Fail 을 두개의 데이터 셋으로 나누고, 그 안에서의 상관관계를 확인, 중요 Feature를 알고 싶다.
+	
+	### 대표적인 Clustering 기반 알고리즘
+	### DBSCAN, ROCK, SNN Clustering은 클러스터를 찾고, 그 외의 데이터를 이상치로 처리한다. 
+	### K-means, EM-Alogirhtm등은 클러스터의 중심과 데이터 사이의 거리를 점수로 환산, 처리한다.
+	### 
+	### 대표적인 Classification 기반 알고리즘
+	### Neural Network, Bayesian networks, SVM, KNN, LOF
+	
+	#### (계획) 여러 알고리즘들을 실험, 조사해 보고, 그 중 가장 나은 Clustering 하나, Classification 하나씩 선택.
+	#### References
+	#### http://docs.iris.tools/manual/IRIS-Usecase/AnomalyDetection/AnomalyDetection_202009_v01.html
+	#### https://ko.logpresso.com/documents/anomaly-detection
+	#### https://jayhey.github.io/novelty%20detection/2017/10/18/Novelty_detection_overview/
+	
 	# REFINE5  : 데이터 스케일링 작업
+	
 	# REFINE6  : Feature Selection (RFE)
+	
 	# REFINE7  : Oversampling (Pass data)
+	
 	# REFINE8  : 마지막 단계 (미정) 
 
 	#원본 데이터 셋과 통계용 데이터 셋을 만듭니다. 
