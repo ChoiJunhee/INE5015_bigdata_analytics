@@ -79,33 +79,88 @@ def DataAnalytics(file_link):
 	rf2_pass_df = rf1_df[rf1_df['Pass/Fail'] == -1]
 	rf2_fail_df = rf1_df[rf1_df['Pass/Fail'] == 1]
 
-	# 상관관계 분석, 제거와 보정 작업
-	# 세 개의 데이터 셋에서 Fail Feature만 변화가 있었음.
-	#rf2_main_c30_df = correlation_refine(rf2_main_df, 0.30, 0.8)
-	#rf2_pass_c30_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
-	#rf2_fail_c30_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
-	rf2_main_c60_df = correlation_refine(rf2_main_df, 0.60, 0.8)
-	rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
-	rf2_fail_c60_df = correlation_refine(rf2_fail_df, 0.60, 0.8)
+	# 상관관계 분석, 이후 세 개의 데이터 셋에서의 배타적인 피쳐 분석
+	# 세 개의 데이터 셋에서 피쳐의 개수 변화는 Fail만 변화가 있었음.
+	# 실행 결과는 주석으로 남기며, 실제 사용시에는 print 문을 모두 주석 처리해야 함.
+	rf2_main_c30_df = correlation_refine(rf2_main_df, 0.30, 0.8)
+	rf2_pass_c30_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
+	rf2_fail_c30_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
 
-	#print(rf2_main_c30_df.describe())
-	#print(rf2_pass_c30_df.describe())
-	#print(rf2_fail_c30_df.describe())
-	#print(rf2_main_c60_df.describe())
-	#print(rf2_pass_c60_df.describe())
-	#print(rf2_fail_c60_df.describe())
+	#rf2_main_c60_df = correlation_refine(rf2_main_df, 0.60, 0.8)
+	#rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
+	#rf2_fail_c60_df = correlation_refine(rf2_fail_df, 0.60, 0.8)
 
-	rf2_main_c30_idx = list(rf2_main_c60_df.describe().columns)
-	rf2_pass_c30_idx = list(rf2_pass_c60_df.describe().columns)
-	rf2_fail_c30_idx = list(rf2_fail_c60_df.describe().columns)
+	##### 여기서부터는 주석 처리해도 됨
+	rf2_main_c30_idx = list(rf2_main_c30_df.describe().columns)
+	rf2_pass_c30_idx = list(rf2_pass_c30_df.describe().columns)
+	rf2_fail_c30_idx = list(rf2_fail_c30_df.describe().columns)
 
 	c30_main_pass_same = list(set(rf2_main_c30_idx).intersection(rf2_pass_c30_idx))
 	c30_main_fail_same = list(set(rf2_main_c30_idx).intersection(rf2_fail_c30_idx))
 	c30_pass_fail_same = list(set(rf2_fail_c30_idx).intersection(rf2_pass_c30_idx))
-	print(len(c30_main_pass_same))
-	print(len(c30_main_fail_same))
-	print(len(c30_pass_fail_same))
 
+	####################################################################################
+	## | main - pass | main - fail | pass - fail | 3개 유형에서 상호 배타인 피쳐 추출   ##
+	####################################################################################
+	rf2_mp_c30_main_exclsv = sorted([x for x in rf2_main_c30_idx if x not in rf2_pass_c30_idx])
+	rf2_mp_c30_pass_exclsv = sorted([x for x in rf2_pass_c30_idx if x not in rf2_main_c30_idx])
+	rf2_mf_c30_main_exclsv = sorted([x for x in rf2_main_c30_idx if x not in rf2_fail_c30_idx])
+	rf2_mf_c30_fail_exclsv = sorted([x for x in rf2_fail_c30_idx if x not in rf2_main_c30_idx])
+	rf2_pf_c30_pass_exclsv = sorted([x for x in rf2_pass_c30_idx if x not in rf2_fail_c30_idx])
+	rf2_pf_c30_fail_exclsv = sorted([x for x in rf2_fail_c30_idx if x not in rf2_pass_c30_idx])
+
+	rf2_c30_exc_dict = {
+	'main - pass' : rf2_mp_c30_main_exclsv,
+	'main - fail' : rf2_mf_c30_main_exclsv,
+	'pass - main' : rf2_mp_c30_pass_exclsv,
+	'pass - fail' : rf2_pf_c30_pass_exclsv,
+	'fail - main' : rf2_mf_c30_fail_exclsv,
+	'fail - pass' : rf2_pf_c30_fail_exclsv
+	}
+	print(rf2_c30_exc_dict)
+	csv_file = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in rf2_c30_exc_dict.items()]))
+	csv_file.to_csv('./rf2_c30_exclusive_features.csv')
+	
+	####################################################################################
+	##  위 내용에서 main-pass + main-fail 과 같이 구분해 main  상호 배타 피쳐 추출 (3회) ##
+	####################################################################################
+	rf2_main_exclusive = sorted(list(set(a+c)))
+	print(rf2_main_exclusive)
+	### FIND 57 EXCLUSIVE FEATURES ###
+	#rf2_c30_main_exc_list = ['F136', 'F144', 'F153', 'F155', 'F156', 'F157', 'F173', 'F175', 'F176', 'F182', 'F198', 'F200', 'F21', 'F218', 'F224', 'F247', 'F248', 'F25', 'F251', 'F255', 'F26', 'F269', 'F27', 'F277', 'F286', 'F290', 'F292', 'F301', 'F302', 'F317', 'F318', 'F32', 'F320', 'F33', 'F331', 'F334', 'F34', 'F35', 'F39', 'F426', 'F438', 'F439', 'F45', 'F473', 'F474', 'F476', 'F492', 'F549', 'F550', 'F551', 'F554', 'F560', 'F578', 'F585', 'F66', 'F70', 'F72']
+
+	rf2_pass_exclusive = sorted(list(set(b+d)))
+	print(rf2_pass_exclusive)
+	### FIND 46 EXCLUSIVE FEATURES ###
+	#rf2_c30_pass_exc_list = ['F117', 'F137', 'F139', 'F159', 'F16', 'F166', 'F170', 'F171', 'F184', 'F185', 'F187', 'F201', 'F206', 'F209', 'F221', 'F222', 'F245', 'F252', 'F267', 'F272', 'F273', 'F274', 'F275', 'F291', 'F295', 'F319', 'F342', 'F345', 'F346', 'F347', 'F356', 'F361', 'F382', 'F383', 'F390', 'F393', 'F4', 'F407', 'F478', 'F496', 'F573', 'F575', 'F577', 'F73', 'F74', 'Pass/Fail']
+	
+	rf2_c30_fail_exclusive = sorted(list(set(c+f)))
+	print(rf2_pass_exclusive)
+	### FIND 53 EXCLUSIVE FEATURES ###
+	#rf2_fail_exc_list = ['F136', 'F153', 'F155', 'F156', 'F157', 'F159', 'F182', 'F198', 'F200', 'F201', 'F21', 'F224', 'F247', 'F248', 'F25', 'F255', 'F26', 'F267', 'F27', 'F273', 'F274', 'F292', 'F302', 'F317', 'F318', 'F319', 'F32', 'F320', 'F33', 'F331', 'F334', 'F34', 'F345', 'F35', 'F356', 'F361', 'F39', 'F426', 'F438', 'F439', 'F45', 'F474', 'F476', 'F492', 'F549', 'F550', 'F551', 'F554', 'F560', 'F578', 'F585', 'F70', 'F72']
+
+	rf2_c30_all_exclusive = sorted(list(set(rf2_main_exclusive + rf2_pass_exclusive + rf2_fail_exclusive)))
+	print(rf2_pass_exclusive)
+	## FIND 103 Exclusive Features ###
+	#rf2_all_exc_list = ['F117', 'F136', 'F137', 'F139', 'F144', 'F153', 'F155', 'F156', 'F157', 'F159', 'F16', 'F166', 'F170', 'F171', 'F173', 'F175', 'F176', 'F182', 'F184', 'F185', 'F187', 'F198', 'F200', 'F201', 'F206', 'F209', 'F21', 'F218', 'F221', 'F222', 'F224', 'F245', 'F247', 'F248', 'F25', 'F251', 'F252', 'F255', 'F26', 'F267', 'F269', 'F27', 'F272', 'F273', 'F274', 'F275', 'F277', 'F286', 'F290', 'F291', 'F292', 'F295', 'F301', 'F302', 'F317', 'F318', 'F319', 'F32', 'F320', 'F33', 'F331', 'F334', 'F34', 'F342', 'F345', 'F346', 'F347', 'F35', 'F356', 'F361', 'F382', 'F383', 'F39', 'F390', 'F393', 'F4', 'F407', 'F426', 'F438', 'F439', 'F45', 'F473', 'F474', 'F476', 'F478', 'F492', 'F496', 'F549', 'F550', 'F551', 'F554', 'F560', 'F573', 'F575', 'F577', 'F578', 'F585', 'F66', 'F70', 'F72', 'F73', 'F74', 'Pass/Fail']
+
+
+	# 이제 corr_30과 corr_60에서 해당 피쳐들의 DF 추출
+	rf2_filt30_main_df = rf2_main_c30_df.transpose().loc[rf2_main_exc_list]
+	rf2_filt30_pass_df = rf2_main_c30_df.transpose().loc[rf2_pass_exc_list]
+	rf2_filt30_fail_df = rf2_main_c30_df.transpose().loc[rf2_fail_exc_list]
+	rf2_filt_all_df = rf2_main_c30_df.transpose().loc[rf2_all_exc_list]
+
+	print(rf2_filt30_main_df)
+	print(rf2_filt30_pass_df)
+	print(rf2_filt30_fail_df)
+	print(rf2_filt_all_df)
+	
+	#test_corr = csv_file.corr()
+	#missing_value_refine('./dd.csv', csv_file, 0.5)
+	#visual = sns.clustermap(test_corr, cmap='RdYlBu_r', vmin=-1, vmax=1)
+	#plt.show()
+	return;
 	'''
 	데이터 셋 분석 결과, 유의미한 결과가 나왔고, 중복되지 않는 Feature들을 따로 시각화 해보도록 하겠습니다.
 	# corr_30 : 기존 437 동일
