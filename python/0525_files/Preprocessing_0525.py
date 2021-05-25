@@ -72,7 +72,6 @@ def DataAnalytics(file_link):
 	# 의미가 없는 표준편차가 0.005 이하인 Feature를 제거, 그리고 데이터 셋 분리
 	rf1_df = close_std_zero_remove(raw_DF_origin)
 	print("=============== STEP 1 ==============")
-	print(rf1_df.describe())
 	print("\n\n")
 
 	# Feature간 상관 관계 분석을 위해 데이터셋 분리 후 실험
@@ -82,20 +81,23 @@ def DataAnalytics(file_link):
 
 	# 상관관계 분석, 제거와 보정 작업
 	# 세 개의 데이터 셋에서 Fail Feature만 변화가 있었음.
-	rf2_main_c30_df = correlation_refine(rf2_main_df, 0.30, 0.8)
-	rf2_pass_c30_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
-	rf2_fail_c30_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
-	#rf2_main_c60_df = correlation_refine(rf2_main_df, 0.60, 0.8)
-	#rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
+	#rf2_main_c30_df = correlation_refine(rf2_main_df, 0.30, 0.8)
+	#rf2_pass_c30_df = correlation_refine(rf2_pass_df, 0.30, 0.8)
+	#rf2_fail_c30_df = correlation_refine(rf2_fail_df, 0.30, 0.8)
+	rf2_main_c60_df = correlation_refine(rf2_main_df, 0.60, 0.8)
+	rf2_pass_c60_df = correlation_refine(rf2_pass_df, 0.60, 0.8)
 	rf2_fail_c60_df = correlation_refine(rf2_fail_df, 0.60, 0.8)
 
-	print(rf2_main_c30_df.describe())
-	print(rf2_pass_c30_df.describe())
-	print(rf2_fail_c30_df.describe())
+	#print(rf2_main_c30_df.describe())
+	#print(rf2_pass_c30_df.describe())
+	#print(rf2_fail_c30_df.describe())
+	#print(rf2_main_c60_df.describe())
+	#print(rf2_pass_c60_df.describe())
+	#print(rf2_fail_c60_df.describe())
 
-	rf2_main_c30_idx = list(rf2_main_c30_df.describe().columns)
-	rf2_pass_c30_idx = list(rf2_pass_c30_df.describe().columns)
-	rf2_fail_c30_idx = list(rf2_fail_c30_df.describe().columns)
+	rf2_main_c30_idx = list(rf2_main_c60_df.describe().columns)
+	rf2_pass_c30_idx = list(rf2_pass_c60_df.describe().columns)
+	rf2_fail_c30_idx = list(rf2_fail_c60_df.describe().columns)
 
 	c30_main_pass_same = list(set(rf2_main_c30_idx).intersection(rf2_pass_c30_idx))
 	c30_main_fail_same = list(set(rf2_main_c30_idx).intersection(rf2_fail_c30_idx))
@@ -104,6 +106,23 @@ def DataAnalytics(file_link):
 	print(len(c30_main_fail_same))
 	print(len(c30_pass_fail_same))
 
+	'''
+	데이터 셋 분석 결과, 유의미한 결과가 나왔고, 중복되지 않는 Feature들을 따로 시각화 해보도록 하겠습니다.
+	# corr_30 : 기존 437 동일
+	[main, pass, fail] 347, 347, 343
+
+	[main-pass] 342 중복 / main 5, pass 5
+	[main-fail] = 313 중복 / main 34, fail 31
+	[pass-fail] = 312 중복 / pass 35, fail 31
+	중복되지 않는 feature들 *(중복포함 141개)
+
+	# corr_60 : 기존 437 동일
+	[main, pass, fail] 256, 256, 249
+
+	[main-pass] 237 중복 / main 19, pass 19
+	[main-fail] 208 중복 / main 48, fail 41
+	[pass-fail] 203 중복 / pass 53, fail 64
+	'''
 
 	print("=============== STEP 2 ==============")
 	'''
