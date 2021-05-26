@@ -249,6 +249,15 @@ def DataAnalytics(file_link):
 		rf3_c30_m40_pass = pd.read_csv('./rf3_c30_m40_pass.csv')
 		rf3_c30_m40_fail = pd.read_csv('./rf3_c30_m40_fail.csv')
 	else:
+		rf3_c30_m40_main = missing_value_refine('./rf3_c30_m40_main.csv', rf2_c30_main_df, 0.3)
+		rf3_c30_m40_pass = missing_value_refine('./rf3_c30_m40_pass.csv', rf2_c30_pass_df, 0.3)
+		rf3_c30_m40_fail = missing_value_refine('./rf3_c30_m40_fail.csv', rf2_c30_fail_df, 0.3)
+
+	if(os.path.isfile('./rf3_c30_m60_main.csv')):
+		rf3_c30_m60_main = pd.read_csv('./rf3_c30_m60_main.csv')
+		rf3_c30_m60_pass = pd.read_csv('./rf3_c30_m60_pass.csv')
+		rf3_c30_m60_fail = pd.read_csv('./rf3_c30_m60_fail.csv')
+	else:
 		rf3_c30_m60_main = missing_value_refine("./rf3_c30_m60_main.csv", rf2_c30_main_df, 0.6)
 		rf3_c30_m60_pass = missing_value_refine("./rf3_c30_m60_pass.csv", rf2_c30_pass_df, 0.6)
 		rf3_c30_m60_fail = missing_value_refine("./rf3_c30_m60_fail.csv", rf2_c30_fail_df, 0.6)
@@ -261,7 +270,7 @@ def DataAnalytics(file_link):
 	print(rf3_c30_m60_main.describe())
 	print(rf3_c30_m60_pass.describe())
 	print(rf3_c30_m60_fail.describe())
-
+	return;
 	print("\n\n\n\n")
 	
 	# outlier 확인
@@ -355,10 +364,11 @@ def missing_value_refine(filename, data, per):
 	save_cols = list(deleted_data.describe().columns)
 	# Missing Value를 다중 대치법으로 채움 -> 옵션제공 예정
 	try:
+		save_cols = list(deleted_data.describe().columns)
 		save_char_df = deleted_data.loc[:, ['Time', 'Pass/Fail']]
 		imp_data = deleted_data.drop(['Time', "Pass/Fail"], axis=1)
 		print("Impute Start")
-		imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(imp_data), columns=save_cols[2:])
+		imputed_df = pd.DataFrame(IterativeImputer(max_iter=8, verbose=False).fit_transform(imp_data), columns=save_cols[1:])
 		processed_df = pd.concat([save_char_df, imputed_df], axis=1)
 		print("Impute End")
 	except:
