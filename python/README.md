@@ -55,20 +55,16 @@ _i will record specific changes for each folder. *(Planned in early June)_
 
 ---
 
- #### (PLAN)
 ### 0526_files
  
- 이 버전이 전처리 과정에서의 마지막 버전이 되었으면 합니다. 예상되는 데이터셋들은 20~30여개가 생성될 것 같습니다.
+ 데이터 전처리 과정의 피드백을 받고, Pass/Fail/All 으로 데이터 셋을 나누고 '유의미한' 데이터셋 추출 과정을 거칠 예정. 
  
- _I hope this will be the last version in the preprocessing process. Expected datasets are likely to be created about 20~30._
+ 유의미한 데이터셋을 판별하는 과정은, 기술적 통계, 피쳐 특징, 피쳐 관계 등등을 포함함.
  
+ _Receive feedback from the data preprocessing process, divide the data set by Pass/Fail/All, and go through the process of extracting the'significant' data set._
  
+ _When determining meaningful datasets, include descriptive statistics, feature characteristics, feature relationships, and more._ 
  
-### 0527_files
- 
- 데이터 셋에 대한 검증 방안과, 그 검증 결과에 따른 데이터셋을 분리하여 모델 학습에 사용하고, 이 외에는 다른 작업에 활용할 계획입니다.
- 
- _We plan to separate the verification method for the data set and the data set according to the verification result and use it for model training, and use it for other tasks._
- 
+
  
 ---
