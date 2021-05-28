@@ -70,7 +70,7 @@ def DataAnalytics(file_link):
 	print("\n\n")
 
 	# 의미가 없는 표준편차가 0.005 이하인 Feature를 제거, 그리고 데이터 셋 분리
-	rf1_df = close_std_zero_remove(raw_DF_origin)
+	rf1_df = close_std_zero_remove(raw_DF_origin, 0.01)
 	print("=============== STEP 1 ==============")
 	print(rf1_df.describe())
 	print("\n\n")
@@ -208,11 +208,16 @@ def DataAnalytics(file_link):
 
 
 	# 프로젝트 편의를 위해 데이터 저장
-	rf2_c30_main_df.to_csv('./rf2/rf2_c30_main.csv')
-	rf2_c30_pass_df.to_csv('./rf2/rf2_c30_pass.csv')
-	rf2_c30_fail_df.to_csv('./rf2/rf2_c30_fail.csv')
+	if(os.path.isfile('./rf2/rf2_c30_main.csv')):
+		rf2_c30_main_df = pd.read_csv('./rf2/rf2_c30_main.csv')
+		rf2_c30_pass_df = pd.read_csv('./rf2/rf2_c30_pass.csv')
+		rf2_c30_fail_df = pd.read_csv('./rf2/rf2_c30_fail.csv')
+	else:
+		rf2_c30_main_df.to_csv('./rf2/rf2_c30_main.csv')
+		rf2_c30_pass_df.to_csv('./rf2/rf2_c30_pass.csv')
+		rf2_c30_fail_df.to_csv('./rf2/rf2_c30_fail.csv')
 
-	### 계산된 파일 불러오기
+	### 계산된 파일 불러오기 *exc 파일이라 코드 주석 처리 해뒀음 (파일 읽기만 함)
 	rf2_f30_main = pd.read_csv('./rf2/rf2_c30_exc20_main.csv')
 	rf2_f30_pass = pd.read_csv('./rf2/rf2_c30_exc20_pass.csv')
 	rf2_f30_fail = pd.read_csv('./rf2/rf2_c30_exc20_fail.csv')
@@ -226,11 +231,11 @@ def DataAnalytics(file_link):
 		rf3_f30_fail = pd.read_csv('./rf3/rf3_c30_exc30_m30_fail.csv')
 		rf3_f30_all = pd.read_csv('./rf3/rf3_c30_exc30_m30_sumset.csv')
 	else:
-		# 결측치 처리 (STEP2 데이터의 피쳐들이 매우 적어 결측치 필터 기준을 높였습니다)
-		rf3_f30_m30_main = missing_value_refine("./rf3/rf3_c30_exc30_m30_main.csv", rf2_f30_main, 0.3)
-		rf3_f30_m30_pass = missing_value_refine('./rf3/rf3_c30_exc30_m30_pass.csv', rf2_f30_pass, 0.3)
-		rf3_f30_m30_fail = missing_value_refine('./rf3/rf3_c30_exc30_m30_fail.csv', rf2_f30_fail, 0.3)
-		rf3_f30_m30_all = missing_value_refine('./rf3/rf3_c30_exc30_m30_sumset.csv', rf2_f30_all, 0.3)
+		# 결측치 처리 (데이터 셋을 나누었기 때문에 0.2 정도로 기준을 높였습니다.)
+		rf3_f30_m30_main = missing_value_refine("./rf3/rf3_c30_exc30_m30_main.csv", rf2_f30_main, 0.2)
+		rf3_f30_m30_pass = missing_value_refine('./rf3/rf3_c30_exc30_m30_pass.csv', rf2_f30_pass, 0.2)
+		rf3_f30_m30_fail = missing_value_refine('./rf3/rf3_c30_exc30_m30_fail.csv', rf2_f30_fail, 0.2)
+		rf3_f30_m30_all = missing_value_refine('./rf3/rf3_c30_exc30_m30_sumset.csv', rf2_f30_all, 0.2)
 	
 	# 결측치 제거와 보정
 	# 이미 파일이 존재하면 수행하지 않음
@@ -271,7 +276,11 @@ def DataAnalytics(file_link):
 	print(rf3_c30_m60_pass.describe())
 	print(rf3_c30_m60_fail.describe())
 
-	sns.stripplot(data=rf3_c30_m60_fail, jitter=True, size=1)
+	
+	sns.stripplot(data=test, jitter=True, size=1);
+	plt.show()
+
+	#sns.stripplot(data=rf3_c30_m60_fail, jitter=True, size=1)
 	## 특정 피쳐의 이상치 존재 확인. 
 	plt.show()
 	return;
@@ -316,11 +325,11 @@ def raw_data_refine(raw_data):
 
 	return raw_DF_original
 
-def close_std_zero_remove(raw_df):
-	# 이 함수는 표준편차가 0.005 미만인 데이터를 제거합니다.
+def close_std_zero_remove(raw_df, num):
+	# 이 함수는 표준편차가 num미만인 데이터를 제거합니다.
 	raw_df_trans = raw_df.describe().transpose()
 
-	remove_std = raw_df_trans[raw_df_trans['std'] <= 0.005].index
+	remove_std = raw_df_trans[raw_df_trans['std'] <= num].index
 	result = raw_df.drop(remove_std, axis=1)
 
 	return result
