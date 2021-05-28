@@ -15,7 +15,7 @@ def close_std_zero_remove(raw_df, num):
 	return result
 
 
-file = pd.read_csv('./rf3/rf3_c30_m60_fail.csv')
+file = pd.read_csv('./rf3/rf3_c30_m60_pass.csv')
 test = close_std_zero_remove(file, 5.0);
 sns.stripplot(data=test, jitter=True, size=1);
 plt.show()

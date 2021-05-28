@@ -218,26 +218,27 @@ def DataAnalytics(file_link):
 		rf2_c30_fail_df.to_csv('./rf2/rf2_c30_fail.csv')
 
 	### 계산된 파일 불러오기 *exc 파일이라 코드 주석 처리 해뒀음 (파일 읽기만 함)
-	rf2_f30_main = pd.read_csv('./rf2/rf2_c30_exc20_main.csv')
-	rf2_f30_pass = pd.read_csv('./rf2/rf2_c30_exc20_pass.csv')
-	rf2_f30_fail = pd.read_csv('./rf2/rf2_c30_exc20_fail.csv')
-	rf2_f30_all = pd.read_csv('./rf2/rf2_c30_exc20_sumset.csv')
+	rf2_f30_e20_main = pd.read_csv('./rf2/rf2_c30_exc20_main.csv')
+	rf2_f30_e20_pass = pd.read_csv('./rf2/rf2_c30_exc20_pass.csv')
+	rf2_f30_e20_fail = pd.read_csv('./rf2/rf2_c30_exc20_fail.csv')
+	rf2_f30_e20_all = pd.read_csv('./rf2/rf2_c30_exc20_sumset.csv')
 
+
+	## STEP 3 ##
 	# 퍼센트에 따른 결측치 상위 Feature 제거
 	# 이미 파일이 존재하면 수행하지 않음
 	if(os.path.isfile('./rf3/rf3_c30_exc30_m30_main')):
-		rf3_f30_main = pd.read_csv('./rf3/rf3_c30_exc30_m30_main.csv')
-		rf3_f30_pass = pd.read_csv('./rf3/rf3_c30_exc30_m30_pass.csv')
-		rf3_f30_fail = pd.read_csv('./rf3/rf3_c30_exc30_m30_fail.csv')
-		rf3_f30_all = pd.read_csv('./rf3/rf3_c30_exc30_m30_sumset.csv')
+		rf3_f30_main = pd.read_csv('./rf3/rf3_c30_e20_m20_main.csv')
+		rf3_f30_pass = pd.read_csv('./rf3/rf3_c30_e20_m20_pass.csv')
+		rf3_f30_fail = pd.read_csv('./rf3/rf3_c30_e20_m20_fail.csv')
+		rf3_f30_all = pd.read_csv('./rf3/rf3_c30_e20_m20_sumset.csv')
 	else:
 		# 결측치 처리 (데이터 셋을 나누었기 때문에 0.2 정도로 기준을 높였습니다.)
-		rf3_f30_m30_main = missing_value_refine("./rf3/rf3_c30_exc30_m30_main.csv", rf2_f30_main, 0.2)
-		rf3_f30_m30_pass = missing_value_refine('./rf3/rf3_c30_exc30_m30_pass.csv', rf2_f30_pass, 0.2)
-		rf3_f30_m30_fail = missing_value_refine('./rf3/rf3_c30_exc30_m30_fail.csv', rf2_f30_fail, 0.2)
-		rf3_f30_m30_all = missing_value_refine('./rf3/rf3_c30_exc30_m30_sumset.csv', rf2_f30_all, 0.2)
+		rf2_f30_e30_m20_main = missing_value_refine("./rf3/rf3_c30_e20_m20_main.csv", rf2_f30_e20_main, 0.2)
+		rf2_f30_e30_m20_pass = missing_value_refine('./rf3/rf3_c30_e20_m20_pass.csv', rf2_f30_e20_pass, 0.2)
+		rf2_f30_e30_m20_fail = missing_value_refine('./rf3/rf3_c30_e20_m20_fail.csv', rf2_f30_e20_fail, 0.2)
+		rf2_f30_e30_m20_all = missing_value_refine('./rf3/rf3_c30_e20_m20_sumset.csv', rf2_f30_e20_all, 0.2)
 	
-	# 결측치 제거와 보정
 	# 이미 파일이 존재하면 수행하지 않음
 	## 40%, 60% 의 차이를 구별하기 위해 시각화 필요
 	if(os.path.isfile('./rf3/rf3_c30_m40_main.csv')):
@@ -248,15 +249,6 @@ def DataAnalytics(file_link):
 		rf3_c30_m40_main = missing_value_refine("./rf3/rf3_c30_m40_main.csv", rf2_c30_main_df, 0.4)
 		rf3_c30_m40_pass = missing_value_refine("./rf3/rf3_c30_m40_pass.csv", rf2_c30_pass_df, 0.4)
 		rf3_c30_m40_fail = missing_value_refine("./rf3/rf3_c30_m40_fail.csv", rf2_c30_fail_df, 0.4)
-
-	if(os.path.isfile('./rf3/rf3_c30_m40_main.csv')):
-		rf3_c30_m40_main = pd.read_csv('./rf3/rf3_c30_m40_main.csv')
-		rf3_c30_m40_pass = pd.read_csv('./rf3/rf3_c30_m40_pass.csv')
-		rf3_c30_m40_fail = pd.read_csv('./rf3/rf3_c30_m40_fail.csv')
-	else:
-		rf3_c30_m40_main = missing_value_refine('./rf3/rf3_c30_m40_main.csv', rf2_c30_main_df, 0.3)
-		rf3_c30_m40_pass = missing_value_refine('./rf3/rf3_c30_m40_pass.csv', rf2_c30_pass_df, 0.3)
-		rf3_c30_m40_fail = missing_value_refine('./rf3/rf3_c30_m40_fail.csv', rf2_c30_fail_df, 0.3)
 
 	if(os.path.isfile('./rf3/rf3_c30_m60_main.csv')):
 		rf3_c30_m60_main = pd.read_csv('./rf3/rf3_c30_m60_main.csv')
@@ -276,7 +268,6 @@ def DataAnalytics(file_link):
 	print(rf3_c30_m60_pass.describe())
 	print(rf3_c30_m60_fail.describe())
 
-	
 	sns.stripplot(data=test, jitter=True, size=1);
 	plt.show()
 
