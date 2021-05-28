@@ -4,7 +4,11 @@
 
 ---
 
-update
+> 현재 작업중인 부분
+
+1. data preprocessing step 4 (missing value), step 5 (data scaling)
+2. step 4, step 5 while Feature selection through data visualization of Features to be managed separately
+3. 주4일 풀타임은 웁니다..
 
 ---
 
