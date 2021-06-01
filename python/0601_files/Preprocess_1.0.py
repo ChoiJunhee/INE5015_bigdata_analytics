@@ -14,7 +14,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
-
+from sklearn.ensemble import RandomForestClssifier
+from sklearn.feature_selection import RFE
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
@@ -113,17 +115,63 @@ def DataAnalytics(step):
 
 		elif(step == 5):
 			#이상치 보정 단계	
-
+			step4_m3_all = pd.read_csv('./step4 - missing value/step4_m3_all.csv')
+			step4_m3_pass = pd.read_csv('./step4 - missing value/step4_m3_pass.csv')
+			step4_m3_fail = pd.read_csv('./step4 - missing value/step4_m3_fail.csv')
+			newdf=set_data_scale(step4_m3_pass, 0)
+			# 아직 명확하게 잘라내기 애매해서 패스
 			step = 6
 			pass
 
 		elif(step == 6):
 			#스케일링 단계
+			## step 5 확정이 되지 않아서 여기서 부터는 데이터셋이 늘어납니다.
+			step4_m3_all = pd.read_csv('./step4 - missing value/step4_m3_all.csv')
+			step4_m3_pass = pd.read_csv('./step4 - missing value/step4_m3_pass.csv')
+			step4_m3_fail = pd.read_csv('./step4 - missing value/step4_m3_fail.csv')
+
+			a1, a2, a3, a4 = set_data_scale(step4_m3_all, 0)
+			a1.to_csv('./step6 - data scale/step6_all_mms.csv', index=False)
+			a2.to_csv('./step6 - data scale/step6_all_ss.csv', index=False)
+			a3.to_csv('./step6 - data scale/step6_all_rs.csv', index=False)
+			a4.to_csv('./step6 - data scale/step6_all_ns.csv', index=False)
+
+			p1, p2, p3, p4 = set_data_scale(step4_m3_pass, 0)
+			p1.to_csv('./step6 - data scale/step6_pass_mms.csv', index=False)
+			p2.to_csv('./step6 - data scale/step6_pass_ss.csv', index=False)
+			p3.to_csv('./step6 - data scale/step6_pass_rs.csv', index=False)
+			p4.to_csv('./step6 - data scale/step6_pass_ns.csv', index=False)
+
+			f1, f2, f3, f4 = set_data_scale(step4_m3_fail, 0)
+			f1.to_csv('./step6 - data scale/step6_fail_mms.csv', index=False)
+			f2.to_csv('./step6 - data scale/step6_fail_ss.csv', index=False)
+			f3.to_csv('./step6 - data scale/step6_fail_rs.csv', index=False)
+			f4.to_csv('./step6 - data scale/step6_fail_ns.csv', index=False)
+			# 이 파일들을 이용해 Feature Selection을 진행합니다.
+
 			step = 7
-			pass
 			
 		elif(step == 7):
 			#Feature Selection
+			a1 = pd.read_csv('./step6 - data scale/step6_all_mms.csv')
+			a2 = pd.read_csv('./step6 - data scale/step6_all_ss.csv')
+			a3 = pd.read_csv('./step6 - data scale/step6_all_rs.csv')
+			a4 = pd.read_csv('./step6 - data scale/step6_all_ns.csv')
+
+			p1 = pd.read_csv('./step6 - data scale/step6_pass_mms.csv')
+			p2 = pd.read_csv('./step6 - data scale/step6_pass_ss.csv')
+			p3 = pd.read_csv('./step6 - data scale/step6_pass_rs.csv')
+			p4 = pd.read_csv('./step6 - data scale/step6_pass_ns.csv')
+
+			f1 = pd.read_csv('./step6 - data scale/step6_fail_mms.csv')
+			f2 = pd.read_csv('./step6 - data scale/step6_fail_ss.csv')
+			f3 = pd.read_csv('./step6 - data scale/step6_fail_rs.csv')
+			f4 = pd.read_csv('./step6 - data scale/step6_fail_ns.csv')
+
+			data_set1 = [a1, p1, f1]
+			data_set2 = [a2, p2, f2]
+			data_set3 = [a3, p3, f3]
+			data_set4 = [a4, p4, f4]
 
 			step = 8
 			pass
@@ -251,11 +299,61 @@ def missing_value_processing(df, per):
 	return processed_df
 
 
-def outlier_processing(df, per):
-	pass
+def outlier_processing(df, weight):
+	df_save = df.loc[:, ['Time', 'Pass/Fail']]
+	df = df.drop(['Time', 'Pass/Fail'], axis=1)
+	cell_num = 0
+	over_list = []
+	for i in range(0, len(list(df.columns))):
+		df_rows = df[list(df.columns)[i]]
+		quant25 = np.percentile(df_rows.values, 2.5)
+		quant75 = np.percentile(df_rows.values, 97.5)
+
+		iqr = quant75 - quant25
+		iqr_weight = iqr * weight
+
+		min_q = quant25 - iqr_weight
+		max_q = quant75 + iqr_weight
+
+		outlier_index = list(df_rows[(df_rows < min_q) | (df_rows > max_q)].index)
+		minimum_index = list(df_rows[(df_rows < min_q)].index)
+		maximum_index = list(df_rows[(df_rows > max_q)].index)
+
+		if(len(outlier_index) != 0):
+			cell_num += len(outlier_index)
+
+			if(len(outlier_index) > len(df.columns) * 0.1):
+				over_list.append(list(df.columns)[i])
+				over_list.append(len(outlier_index))
+
+		for idx in range(0, len(minimum_index)):
+			df.loc[[minimum_index[idx]], [list(df.columns)[i]]] = min_q
+		for idx in range(0, len(maximum_index)):
+			df.loc[[maximum_index[idx]], [list(df.columns)[i]]] = max_q
 
 def set_data_scale(df, num):
-	pass
+	redf = df.iloc[:,1:]
+	MMS = MinMaxScaler()
+	SS = StandardScaler()
+	RS = RobustScaler()
+	NS = Normalizer()
+
+	MMS.fit(redf)
+	SS.fit(redf)
+	RS.fit(redf)
+	NS.fit(redf)
+
+	redf_mms = MMS.transform(redf)
+	redf_ss = SS.transform(redf)
+	redf_rs = RS.transform(redf)
+	redf_ns = NS.transform(redf)
+
+	redf_mms_pd = pd.DataFrame(redf_mms, columns=redf.columns)
+	redf_ss_pd = pd.DataFrame(redf_ss, columns=redf.columns)
+	redf_rs_pd = pd.DataFrame(redf_rs, columns=redf.columns)
+	redf_ns_pd = pd.DataFrame(redf_ns, columns=redf.columns)
+
+	return redf_mms_pd, redf_ss_pd, redf_rs_pd, redf_ns_pd
 
 def feature_selection(df, num):
 	pass
@@ -268,7 +366,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(4)
+DataAnalytics(5)
 
 ############################ To be Updated ##########################
 ## 1. 미정                                                          ##
