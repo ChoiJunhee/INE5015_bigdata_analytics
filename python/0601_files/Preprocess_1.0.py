@@ -1,6 +1,6 @@
 #####################################################################
 #####################################################################
-####    SECOM Data Preprocessing Implementation - Version 1.0    ####
+####    SECOM Data Preprocessing and Data Modeling - Version 1.0 ####
 #####################################################################
 #####################################################################
 
@@ -14,11 +14,38 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
-from sklearn.ensemble import RandomForestClssifier
+
 from sklearn.feature_selection import RFE
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, Normalizer
+from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve
+
+# @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
+# @result Confuse Matrix에 의한 결과 출력...
+# @return 미정
+def Confuse_Matrix_Performance(df):
+	#https://injo.tistory.com/13
+	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
+	X = df.iloc[1:, 1:]
+	Y = df.iloc[1:, 0]
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.1, stratify=Y)
+	lr_clf = LogisticRegression()
+	lr_clf.fit(X_train, Y_train)
+	pred = lr_clf.predict(X_train)
+	pred_proba = lr_clf.predict_proba(X_test)[:, 1:]
+
+	matrix = confusion_matrix(Y_test, pred)
+	accuracy = accuracy_score(Y_test, pred)
+	precision = precision_score(Y_test, pred)
+	recall = recall_score(Y_test, pred)
+	f1 = f1_score(Y_test, pred)
+	roc_auc = roc_auc_score(Y_test, pred_proba)
+	print("Confusion Matrix")
+	print(matrix)
+	print('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
 
 
 '''
@@ -173,6 +200,10 @@ def DataAnalytics(step):
 			data_set3 = [a3, p3, f3]
 			data_set4 = [a4, p4, f4]
 
+			print("ALL | PASS | FAIL\n")
+			for x in data_set1:
+				print("MMS")
+				Confuse_Matrix_Performance(x)
 			step = 8
 			pass
 			
@@ -372,3 +403,6 @@ DataAnalytics(5)
 ## 1. 미정                                                          ##
 ## 2. 미정                                                          ##
 #####################################################################
+
+
+
