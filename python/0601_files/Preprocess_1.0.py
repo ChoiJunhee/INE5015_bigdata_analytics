@@ -53,10 +53,10 @@ def DataAnalytics(step):
 			step2_s10_df = pd.read_csv('./step1 - std remove/std_1.0.csv');
 
 			# 실제 데이터셋 사용 시 s10 사용함
-			step2_all_df, step2_pass_df, step2_fail_df = devide_PF(step2_s5_df)
-			step2_all_df.to_csv('./step2 - devide PF/s5_all.csv', index=False)
-			step2_pass_df.to_csv('./step2 - devide PF/s5_pass.csv', index=False)
-			step2_fail_df.to_csv('./step2 - devide PF/s5_fail.csv', index=False)
+			#step2_all_df, step2_pass_df, step2_fail_df = devide_PF(step2_s5_df)
+			#step2_all_df.to_csv('./step2 - devide PF/s5_all.csv', index=False)
+			#step2_pass_df.to_csv('./step2 - devide PF/s5_pass.csv', index=False)
+			#step2_fail_df.to_csv('./step2 - devide PF/s5_fail.csv', index=False)
 
 			tep2_all_df, step2_pass_df, step2_fail_df = devide_PF(step2_s10_df)
 			step2_all_df.to_csv('./step2 - devide PF/s10_all.csv', index=False)
@@ -70,6 +70,19 @@ def DataAnalytics(step):
 			step3_s10_all = pd.read_csv('./step2 - devide PF/s10_all.csv')
 			step3_s10_pass = pd.read_csv('./step2 - devide PF/s10_pass.csv')
 			step3_s10_fail = pd.read_csv('./step2 - devide PF/s10_fail.csv')
+
+			#corr 30만 사용함. corr 60과 큰 차이 없음. (데이터가 작은 Fail 제외)
+			#fail 데이터에서 중요한 Feature가 있을 것으로 추측됨.
+			step3_s10_c30_all = correlation_remove(step3_s10_all, 0.3, 0.8)
+			step3_s10_c30_pass = correlation_remove(step3_s10_pass, 0.3, 0.8)
+			step3_s10_c30_fail = correlation_remove(step3_s10_fail, 0.3, 0.8)
+
+			step3_s10_c30_all.to_csv('./step3 - correlation/c30_all.csv', index=False)
+			step3_s10_c30_pass.to_csv('./step3 - correlation/c30_pass.csv', index=False)
+			step3_s10_c30_fail.to_csv('./step3 - correlation/c30_fail.csv', index=False)
+
+			print("[*] Step 3 - Complete.")
+			step = 4
 
 		elif(step == 4):
 			pass
@@ -121,9 +134,43 @@ def devide_PF(df):
 '''
 def correlation_remove(df, per, abs_num):
 	corr_df = df.corr()
-	#print(corr_df.describe())
 	corr_nan_df = corr_df[corr_df > abs(abs_num)]
-	#print(corr_nan_df.describe())
+	cols = list(corr_nan_df)
+	rows = list(corr_nan_df.index)
+
+	corr_list = []
+
+	# 특정 계수 이상의 상관관계를 가진 Feature를 찾는 중 ...
+	for i in range(0, len(cols)):
+		for j in range(0, len(rows)):
+			temp = []
+			if(corr_nan_df[cols[i]][rows[j]] > abs(abs_num)):
+				temp.append(cols[i])
+				temp.append(rows[j])
+				temp.append(corr_nan_df[cols[i]][rows[j]])
+				corr_list.append(temp)
+
+	
+	corr_list_df = pd.DataFrame(corr_list)
+	corr_result = corr_list_df.drop_duplicates([2], keep="first")
+
+	x = corr_result[0].value_counts()
+	xdf = pd.DataFrame(x)
+	y = corr_result[1].value_counts()
+	ydf = pd.DataFrame(y)
+
+	
+	corr_df = pd.concat([xdf, ydf], ignore_index=True, axis=1)
+	corr_pc = corr_df.fillna(0)
+	corr_df['sum'] = corr_pc[0] + corr_pc[1]
+	corr_df = corr_df.sort_values(by=['sum'], axis=0, ascending=False)
+
+	extract = []
+	for i in range(0, int(len(corr_df.index) * per)):
+		extract.append(list(corr_df.index)[i])
+
+	return df.drop(extract, axis=1)
+
 
 '''
 @param - df : 결측치를 제거할 데이터 프레임
@@ -150,7 +197,7 @@ def data_oversampling(df, num):
 
 
 
-
+# @param : 시작하고 싶은 전처리 단계
 DataAnalytics(3)
 
 ############################ To be Updated ##########################
