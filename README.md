@@ -6,18 +6,14 @@
 
 > 현재 작업중인 부분
 
-1. data preprocessing step 4 (missing value), step 5 (data scaling)
-2. step 4, step 5 while Feature selection through data visualization of Features to be managed separately
+1. 데이터 전처리에 있어 Feature Selection 전 후 작업
+2. 의미있는 데이터셋 분별 (시각화 필요)
 3. 주4일 풀타임은 웁니다..
 
 ---
 
 ## 일정
 줌과 카카오톡 등을 이용하여 공지하며, 기본적으로 issue를 확인하시길 바랍니다.
-
-> 05/27 (목) ~ 05/29(일)
-
-데이터셋 시각화를 통해 유의미한 피쳐 선별
 
 ---
 
