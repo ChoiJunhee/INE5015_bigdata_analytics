@@ -26,9 +26,8 @@ from sklearn.impute import IterativeImputer
 '''
 def DataAnalytics(step):
 
-
 	#반복문과 조건문을 통해 switch 역할을 하도록 함 */
-	while(step != -1):
+	while(step != 10):
 
 		if(step == 0):
 			# raw 데이터를 정렬해서 가져옴
@@ -85,9 +84,49 @@ def DataAnalytics(step):
 			step = 4
 
 		elif(step == 4):
-			pass
+			# 결측치 보정 단계
+
+			# ALL, PASS, FAIL마다 결측치 커트라인을 변경함
+			step4_m5_all = missing_value_processing(step3_s10_c30_all, 0.5)
+			step4_m5_pass = missing_value_processing(step3_s10_c30_pass, 0.4)
+			step4_m5_fail = missing_value_processing(step3_s10_c30_fail, 0.3)
+
+			step4_m5_all.to_csv('./step4 - missing value/step4_m5_all.csv')
+			step4_m5_pass.to_csv('./step4 - missing value/step4_m5_pass.csv')
+			step4_m5_fail.to_csv('./step4 - missing value/step4_m5_fail.csv')
+
+			print("[*] Step 4 - Complete.")
+			step = 5
+			
+
 		elif(step == 5):
+			#이상치 보정 단계	
+
+			step = 6
 			pass
+
+		elif(step == 6):
+			#스케일링 단계
+			step = 7
+			pass
+			
+		elif(step == 7):
+			#Feature Selection
+
+			step = 8
+			pass
+			
+		elif(step == 8):
+			#오버 샘플링 단계
+
+			step = 9
+			pass
+
+		elif(step == 9):
+			#최종 데이터 셋 선정 단계
+
+			step = 10
+			print("[*] Preprocessing Complete.")
 		else:
 			pass
 	# 반복문 종료 - Preprocessing Complete.
@@ -178,7 +217,26 @@ def correlation_remove(df, per, abs_num):
 @return - 기준 이상의 결측치를 갖는 Feature가 삭제된 데이터 프레임
 '''
 def missing_value_processing(df, per):
-	pass
+
+	null_data = df.isnull().sum()
+	null_df = pd.DataFrame(null_data)
+	null_df['null_per'] = (null_df[0] / len(null_df.index))
+
+	null_list = null_df[null_df['null_per'] > per].index
+	remove_data = df.drop(null_list, axis=1)
+	save_cols = list(remove_data.describe().columns)
+
+	try:
+		save_cols = list(remove_data.describe().columns)
+		save_char_df = remove_data.loc[:, ['Time', 'Pass/Fail']]
+		imp_data = remove_data.drop(['Time', "Pass/Fail"], axis=1)
+		imputed_df = pd.DataFrame(IterativeImputer(max_iter=16, verbose=False).fit_transform(imp_data), columns=save_cols[1:])
+		processed_df = pd.concat([save_char_df, imputed_df], axis=1)
+	except:
+		save_cols = list(remove_data.describe().columns)
+		imputed_df = pd.DataFrame(IterativeImputer(max_iter=16, verbose=False).fit_transform(remove_data), columns=save_cols)
+		processed_df = imputed_df
+	return processed_df
 
 
 def outlier_processing(df, per):
@@ -198,7 +256,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(3)
+DataAnalytics(4)
 
 ############################ To be Updated ##########################
 ## 1. 미정                                                          ##
