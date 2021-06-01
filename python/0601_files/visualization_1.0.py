@@ -1,21 +1,64 @@
+####################################################
+####################################################
+####  CSV FILE - VISUALIZATION - Version 1.0    ####
+####################################################
+####################################################
+####                                            ####
+####################################################
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
 
+# @param file_link - 파일 링크 리스트
+# @param opt - 출력할 그래프
+# @param x, y - label
+def visualization(file_link, opt, x, y):
+	data = pd.read_csv(file_link)
 
-def close_std_zero_remove(raw_df, num):
-	# 이 함수는 표준편차가 num미만인 데이터를 제거합니다.
-	raw_df_trans = raw_df.describe().transpose()
+	if(1 == opt):
+		# Box Flot
+		sns.boxplot(data=data, palette="Paired")
+		plt.show()
+		plt.xticks(rotation=45)
+		sns.boxplot(data=data, x=x, y=y, pallette="Paired")
+		plt.show()
+		
+	elif(2 == opt):
+		# Histogram
+		sns.distplot(data[0][0], kde=False, rug=True)
+		## 고쳐야함
 
-	remove_std = raw_df_trans[raw_df_trans['std'] <= num].index
-	result = raw_df.drop(remove_std, axis=1)
+	elif(3 == opt):
+		# countplot
+		plt.xticks(rotation=45)
+		sns.countplot(data=data, x=x, y=y)
+		plt.show()
+		#sns.catplot
 
-	return result
+	elif(4 == opt):
+		sns.relplot(data=data, x=x, y=y)
+		plt.show()
+		
+	elif(5 == opt):
+		#Line Plot
+		sns.lineplot(data=data, x=x, y=y)
+		#피쳐 별 비교 필요
+		# relplot 필요
+	elif(6 == opt):
+		sns.barplot(data=data, x=x, y=y)
+		# hue 사용하여 하나의 변수에 대해 나눌 것
+		# catplot을 사용해 all, pass, fail 비교해볼 것
+		# barplot 은 뭐 쓸 일 없을거같긴한데...
+		# heatmap 추가해야함
+		## 회귀 분석 그래프를 그리는 Implot 사용해볼것...
+		## https://tariat.tistory.com/792
+		# 후반에 joinplot 을 통해 1:1 비교 할 수 있게
+		# pairplot도 써보고...
+		##
 
 
-file = pd.read_csv('./rf3/rf3_c30_m60_pass.csv')
-test = close_std_zero_remove(file, 5.0);
-sns.stripplot(data=test, jitter=True, size=1);
-plt.show()
+visualization('./step4 - missing value/step4_m3_fail.csv', 1, "x", "y")
