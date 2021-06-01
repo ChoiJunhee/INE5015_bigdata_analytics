@@ -311,9 +311,6 @@ def DataAnalytics(file_link):
 
 
 def raw_data_refine(raw_data):
-	# transpose
-	raw_df_stat = raw_data.transpose()
-
 	# 분석을 위해 숫자 데이터만 분리하고 Feature 번호를 만들어줌
 	raw_DF_char = raw_data.loc[:, ['Time', 'Pass/Fail']]
 	raw_DF_inte = raw_data.drop(['Time', 'Pass/Fail'], axis=1).add_prefix('F')

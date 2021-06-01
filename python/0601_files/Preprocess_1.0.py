@@ -18,16 +18,80 @@ import os.path
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
-def DataAnalytics(steps):
-	pass
+
+'''
+@param - steps : 기 진행 되어 데이터 셋을 확보한 경우, 
+                 해당 단계부터 할 수 있도록 함
+@result : 전처리 완료된 데이터 (csv file)
+'''
+def DataAnalytics(step):
+
+
+	#반복문과 조건문을 통해 switch 역할을 하도록 함 */
+	while(step != -1):
+
+		if(step == 0):
+			# raw 데이터를 정렬해서 가져옴
+			df = raw_csv('./uci-secom.csv')
+			df.to_csv('./step0 - raw/secom.csv', index=False)
+			print("[*] Step 0 - Complete.")
+			step = 1
+
+		elif(step == 1):
+			step1_df = pd.read_csv('./step0 - raw/secom.csv')
+			# 일정 표준편차 이하 제거 후 csv 저장
+			step1_s5 = data_std_remove(step1_df, 0.5);
+			step1_s5.to_csv('./step1 - std remove/std_0.5.csv', index=False)
+			step1_s10 = data_std_remove(step1_df, 1);
+			step1_s10.to_csv('./step1 - std remove/std_1.0.csv', index=False)
+			print("[*] Step 1 - Complete.")
+			step = 2
+
+		elif(step == 2):
+			# Pass Fail 데이터 나누는 단계
+			step2_s5_df =pd.read_csv('./step1 - std remove/std_0.5.csv');
+			step2_s10_df = pd.read_csv('./step1 - std remove/std_1.0.csv');
+
+			# 실제 데이터셋 사용 시 s10 사용함
+			step2_all_df, step2_pass_df, step2_fail_df = devide_PF(step2_s5_df)
+			step2_all_df.to_csv('./step2 - devide PF/s5_all.csv', index=False)
+			step2_pass_df.to_csv('./step2 - devide PF/s5_pass.csv', index=False)
+			step2_fail_df.to_csv('./step2 - devide PF/s5_fail.csv', index=False)
+
+			tep2_all_df, step2_pass_df, step2_fail_df = devide_PF(step2_s10_df)
+			step2_all_df.to_csv('./step2 - devide PF/s10_all.csv', index=False)
+			step2_pass_df.to_csv('./step2 - devide PF/s10_pass.csv', index=False)
+			step2_fail_df.to_csv('./step2 - devide PF/s10_fail.csv', index=False)
+			print("[*] Step 2 - Complete.")
+			step = 3
+
+		elif(step == 3):
+			# Feature간 상관관계 확인 및 제거 #
+			step3_s10_all = pd.read_csv('./step2 - devide PF/s10_all.csv')
+			step3_s10_pass = pd.read_csv('./step2 - devide PF/s10_pass.csv')
+			step3_s10_fail = pd.read_csv('./step2 - devide PF/s10_fail.csv')
+
+		elif(step == 4):
+			pass
+		elif(step == 5):
+			pass
+		else:
+			pass
+	# 반복문 종료 - Preprocessing Complete.
 
 
 '''
 @param - file_link : Raw CSV 파일의 주소
-@return - CSV 파일의 Dataframe
+@return - 문자 열이 0, 1번째로 정렬된  CSV 파일의 Dataframe
 '''
-def get_data(file_link):
-	pass
+def raw_csv(file_link):
+	raw_df = pd.read_csv(file_link)
+
+	char_df = raw_df.loc[:, ['Time', 'Pass/Fail']]
+	inte_df = raw_df.drop(['Time', 'Pass/Fail'], axis=1).add_prefix('F')
+	return pd.concat([char_df, inte_df], axis=1)
+
+
 
 '''
 @param - df : 가공할 데이터 프레임
@@ -35,15 +99,31 @@ def get_data(file_link):
 @return - 기준 이하의 표준편차를 가진 Feature가 제거된 데이터 프레임
 '''
 def data_std_remove(df, num):
-	pass
+	df_trans = df.describe().transpose()
+	remove_std = df_trans[df_trans['std'] <= num].index
+	result = df.drop(remove_std, axis=1)
+	return df.drop(remove_std[1:], axis=1)
+
+'''
+@param - df : PASS/FAIL을 나눌 프레임
+@return - Pass, Fail로 나눈 데이터 프레임
+'''
+def devide_PF(df):
+	pass_df = df[df['Pass/Fail'] == -1]
+	fail_df = df[df['Pass/Fail'] == 1]
+	return df, pass_df, fail_df
+
 
 '''
 @param - df : 다중공선성을 제거할 데이터 프레임
 @param - num : 기준이 될 상관관계 지수
 @return - 상관관계가 높은 Feature가 제거된 데이터 프레임
 '''
-def correlation_remove(df, per):
-	pass
+def correlation_remove(df, per, abs_num):
+	corr_df = df.corr()
+	#print(corr_df.describe())
+	corr_nan_df = corr_df[corr_df > abs(abs_num)]
+	#print(corr_nan_df.describe())
 
 '''
 @param - df : 결측치를 제거할 데이터 프레임
@@ -52,6 +132,7 @@ def correlation_remove(df, per):
 '''
 def missing_value_processing(df, per):
 	pass
+
 
 def outlier_processing(df, per):
 	pass
@@ -70,6 +151,7 @@ def data_oversampling(df, num):
 
 
 
+DataAnalytics(3)
 
 ############################ To be Updated ##########################
 ## 1. 미정                                                          ##
