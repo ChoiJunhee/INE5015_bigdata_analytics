@@ -85,16 +85,28 @@ def DataAnalytics(step):
 
 		elif(step == 4):
 			# 결측치 보정 단계
-
+			step3_s10_c30_all = pd.read_csv('./step3 - correlation/c30_all.csv')
+			step3_s10_c30_pass = pd.read_csv('./step3 - correlation/c30_pass.csv')
+			step3_s10_c30_fail =pd.read_csv('./step3 - correlation/c30_fail.csv')
+			
 			# ALL, PASS, FAIL마다 결측치 커트라인을 변경함
+			'''
 			step4_m5_all = missing_value_processing(step3_s10_c30_all, 0.5)
 			step4_m5_pass = missing_value_processing(step3_s10_c30_pass, 0.4)
 			step4_m5_fail = missing_value_processing(step3_s10_c30_fail, 0.3)
 
-			step4_m5_all.to_csv('./step4 - missing value/step4_m5_all.csv')
-			step4_m5_pass.to_csv('./step4 - missing value/step4_m5_pass.csv')
-			step4_m5_fail.to_csv('./step4 - missing value/step4_m5_fail.csv')
+			step4_m5_all.to_csv('./step4 - missing value/step4_m5_all.csv', index=False)
+			step4_m5_pass.to_csv('./step4 - missing value/step4_m5_pass.csv', index=False)
+			step4_m5_fail.to_csv('./step4 - missing value/step4_m5_fail.csv', index=False)
+			'''
+			step4_m3_all = missing_value_processing(step3_s10_c30_all, 0.3)
+			step4_m3_pass = missing_value_processing(step3_s10_c30_pass, 0.2)
+			step4_m3_fail = missing_value_processing(step3_s10_c30_fail, 0.1)
 
+			step4_m3_all.to_csv('./step4 - missing value/step4_m3_all.csv', index=False)
+			step4_m3_pass.to_csv('./step4 - missing value/step4_m3_pass.csv', index=False)
+			step4_m3_fail.to_csv('./step4 - missing value/step4_m3_fail.csv', index=False)
+			
 			print("[*] Step 4 - Complete.")
 			step = 5
 			
