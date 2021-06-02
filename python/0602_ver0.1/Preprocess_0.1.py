@@ -31,13 +31,18 @@ def Confuse_Matrix_Performance(df):
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
 	X = df.iloc[1:, 1:]
 	Y = df.iloc[1:, 0]
-	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.1, stratify=Y)
+	print(" X ")
+	print(X)
+	print("\n Y ")
+	print(Y)
+	print()
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.3, stratify=Y)
 	lr_clf = LogisticRegression()
 	lr_clf.fit(X_train, Y_train)
-	pred = lr_clf.predict(X_train)
+	pred = lr_clf.predict(X_test)
 	pred_proba = lr_clf.predict_proba(X_test)[:, 1:]
 
-	matrix = confusion_matrix(Y_test, pred)
+	matrix = confusion_matrix(Y_test, y_pred=pred)
 	accuracy = accuracy_score(Y_test, pred)
 	precision = precision_score(Y_test, pred)
 	recall = recall_score(Y_test, pred)
@@ -152,7 +157,11 @@ def DataAnalytics(step):
 
 		elif(step == 6):
 			#스케일링 단계
-			## step 5 확정이 되지 않아서 여기서 부터는 데이터셋이 늘어납니다.
+			
+			################################################################
+			## step 5 확정이 되지 않아서 여기서 부터는 데이터셋이 늘어납니다. ##
+			################################################################
+
 			step4_m3_all = pd.read_csv('./step4 - missing value/step4_m3_all.csv')
 			step4_m3_pass = pd.read_csv('./step4 - missing value/step4_m3_pass.csv')
 			step4_m3_fail = pd.read_csv('./step4 - missing value/step4_m3_fail.csv')
@@ -397,7 +406,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(5)
+DataAnalytics(7)
 
 ############################ To be Updated ##########################
 ## 1. 미정                                                          ##
