@@ -25,7 +25,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_a
 
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
-# @return 미정
+# @return (미구현) 점수 리스트 
 def Confuse_Matrix_Performance(df):
 	#https://injo.tistory.com/13
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
