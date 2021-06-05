@@ -15,7 +15,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
 
+from scipy import stats
+from collections import Counter
 from sklearn.feature_selection import RFE
+from sklearn.neighbors import LocalOutlierFactor
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LogisticRegression
@@ -149,19 +152,13 @@ def DataAnalytics(step):
 			step4_m3_all = pd.read_csv('./step4 - missing value/step4_m3_all.csv')
 			step4_m3_pass = pd.read_csv('./step4 - missing value/step4_m3_pass.csv')
 			step4_m3_fail = pd.read_csv('./step4 - missing value/step4_m3_fail.csv')
-			newdf=set_data_scale(step4_m3_pass, 0)
-			# 아직 명확하게 잘라내기 애매해서 패
 
-			함수로 만들어서 그 뭐냐... 반복문 써서... 하나하나 계산해서...
-			concat으로 합치고 drop할건 drop하고... 졸리니 내일해야지...
-			buf = step4_m3_fail.drop(['Time', 'Pass/Fail'], axis=1)
-			print(buf)
-			iqr_25, iqr_75 = np.percentile(buf, [25, 75])
-			iqr = iqr_75 - iqr_25
-			low_bound = iqr_25 - (iqr * 1.5)
-			upp_bound = iqr_75 + (iqr * 1.5)
-			step5_fail = np.where((buf > upp_bound) | (buf < low_bound))
-			step5_
+			save_col = step4_m3_pass.loc[:, ['Time', 'Pass/Fail']]
+			step4_m3_pass = step4_m3_pass.drop(['Time', 'Pass/Fail'], axis=1)
+
+			newdf=outlier_processing(step4_m3_pass, 1.8)
+
+			
 			return;
 			step = 6
 			pass
@@ -350,37 +347,26 @@ def missing_value_processing(df, per):
 	return processed_df
 
 
-def outlier_processing(df, weight):
-	df_save = df.loc[:, ['Time', 'Pass/Fail']]
-	df = df.drop(['Time', 'Pass/Fail'], axis=1)
-	cell_num = 0
-	over_list = []
-	for i in range(0, len(list(df.columns))):
-		df_rows = df[list(df.columns)[i]]
-		quant25 = np.percentile(df_rows.values, 2.5)
-		quant75 = np.percentile(df_rows.values, 97.5)
+def outlier_processing(df, per):
+	data_num = list(df.index)
+	features = list(df.columns)
+	print(df.info())
+	outliers_indices = []
 
-		iqr = quant75 - quant25
-		iqr_weight = iqr * weight
+	for col in features:
+		Q1 = np.percentile(df[col][:], 25)
+		Q3 = np.percentile(df[col][:], 75)
+		IQR = Q3 - Q1
 
-		min_q = quant25 - iqr_weight
-		max_q = quant75 + iqr_weight
+		outlier_step = IQR * per 
+		outlier_list_col = df[(df[col] < Q1 - outlier_step) | (df[col] > Q3 + outlier_step)].index
+		outliers_indices.extend(outlier_list_col)
+	outliers_indices = Counter(outliers_indices)
+	#multiple_outliers = list(k for v in outliers_indices.items() if v > data_num)
+	print(outliers_indices)
+	return;
 
-		outlier_index = list(df_rows[(df_rows < min_q) | (df_rows > max_q)].index)
-		minimum_index = list(df_rows[(df_rows < min_q)].index)
-		maximum_index = list(df_rows[(df_rows > max_q)].index)
 
-		if(len(outlier_index) != 0):
-			cell_num += len(outlier_index)
-
-			if(len(outlier_index) > len(df.columns) * 0.1):
-				over_list.append(list(df.columns)[i])
-				over_list.append(len(outlier_index))
-
-		for idx in range(0, len(minimum_index)):
-			df.loc[[minimum_index[idx]], [list(df.columns)[i]]] = min_q
-		for idx in range(0, len(maximum_index)):
-			df.loc[[maximum_index[idx]], [list(df.columns)[i]]] = max_q
 
 def set_data_scale(df, num):
 	redf = df.iloc[:,1:]
