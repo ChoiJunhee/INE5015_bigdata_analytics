@@ -227,6 +227,7 @@ def DataAnalytics(step):
 			STD_Scale_pass.to_csv('./[step 6] - DC - scaling/STD_pass.csv', index=False)
 			MINMAX_Scale_fail.to_csv('./[step 6] - DC - scaling/MINMAX_fail.csv', index=False)
 			STD_Scale_fail.to_csv('./[step 6] - DC - scaling/STD_fail.csv', index=False)
+			print(MINMAX_Scale_all)
 			print("[*] Step 6 - Complete.")
 
 			step = 7
@@ -430,7 +431,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(5)
+DataAnalytics(6)
 
 ############################ To be Updated ##########################
 ## 1. 미정                                                          ##
