@@ -165,7 +165,7 @@ def DataAnalytics(step):
 			## Missing Value Percentage > 0.45 : 삭제
 			## 0.3 < MVP < 0.45 : 중앙 값 대체 
 			## Missing Value Percentage < 0.3 : IterativeImputation
-			## -> 변경 0.6 이상 삭제, 이하 max_iter 30으로 진행. (비교필요)
+			## -> 변경 0.5 이상 삭제, 이하 max_iter 30으로 진행. (비교필요)
 
 			s4_MVP_all = missing_value_processing(s3_c30_all)
 			s4_MVP_pass = missing_value_processing(s3_c30_pass)
@@ -211,6 +211,10 @@ def DataAnalytics(step):
 			s4_pass = pd.read_csv('./[step 5] - DC - Oulier_refine/w15_o50_pass.csv')
 			s4_fail = pd.read_csv('./[step 5] - DC - Oulier_refine/w15_o60_fail.csv')
 			
+			s4_all = s4_all.drop(['F209', 'F418', 'F419', 'F433', 'F478', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511', 'F521' ], axis=1)
+			s4_pass = s4_pass.drop(['F209', 'F418', 'F419', 'F433', 'F478', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511', 'F521' ], axis=1)
+			s4_fail = s4_fail.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F488', 'F499', 'F500', 'F511', 'F521' ], axis=1)
+
 			MINMAX_Scale_all, STD_Scale_all = set_data_scale(s4_all)
 			MINMAX_Scale_pass, STD_Scale_pass = set_data_scale(s4_pass)
 			MINMAX_Scale_fail, STD_Scale_fail = set_data_scale(s4_fail)
@@ -275,7 +279,7 @@ def raw_csv(file_link):
 '''
 def data_std_remove(df, num):
 	df_trans = df.describe().transpose()
-	remove_std = df_trans[df_trans['std'] <= num].index
+	remove_std = df_trans[df_trans['std'] < num].index
 	return df.drop(remove_std[1:], axis=1)
 
 '''
@@ -344,7 +348,7 @@ def missing_value_processing(df):
 	null_df = pd.DataFrame(null_data)
 	null_df['null_per'] = (null_df[0] / len(null_df.index))
 
-	null_list = null_df[null_df['null_per'] > 0.6].index
+	null_list = null_df[null_df['null_per'] > 0.5].index
 	remove_data = df.drop(null_list, axis=1)
 	save_cols = list(remove_data.describe().columns)
 
@@ -441,6 +445,28 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(0)
+DataAnalytics(5)
 
 
+
+'''
+F209
+F418
+F419
+F433
+F478
+
+F482
+F486
+F487
+F488
+F489
+
+F499
+F500
+F511
+F521
+
+이 외에도 더 있을 수 있음
+
+'''
