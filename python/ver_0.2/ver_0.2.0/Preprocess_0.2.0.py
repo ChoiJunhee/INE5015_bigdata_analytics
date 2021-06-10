@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
 
-from sklearn.feature_selection import RFE
+from sklearn.feature_selection import RFE, SelectKBest, chi2
+from sklearn.decomposition import PCA
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LogisticRegression
@@ -233,15 +234,47 @@ def DataAnalytics(step):
 			print("[*] Step 6 - Complete.")
 
 			step = 7
-			return;
 			
 		elif(step == 7):
 			#Feature Selection
+			# step 6, step 7간 비교 시각화 자료 요청합니다. 
 
+			MINMAX_Scale_all = pd.read_csv('./[step 6] - DC - scaling/MINMAX_all.csv')
+			STD_Scale_all = pd.read_csv('./[step 6] - DC - scaling/STD_all.csv')
+			
+			MINMAX_Scale_pass = pd.read_csv('./[step 6] - DC - scaling/MINMAX_pass.csv')
+			STD_Scale_pass = pd.read_csv('./[step 6] - DC - scaling/STD_pass.csv')
+			
+			MINMAX_Scale_fail = pd.read_csv('./[step 6] - DC - scaling/MINMAX_fail.csv')
+			STD_Scale_fail = pd.read_csv('./[step 6] - DC - scaling/STD_fail.csv')
+			
+			KBS_MMS_ALL, RFE_MMS_ALL = feature_selection(MINMAX_Scale_all, 0.75)
+			KBS_STD_ALL, RFE_STD_ALL = feature_selection(MINMAX_Scale_all, 0.75)
 
+			KBS_MMS_PASS, RFE_MMS_PASS = feature_selection(MINMAX_Scale_all, 0.75)
+			KBS_STD_PASS, RFE_STD_PASS = feature_selection(MINMAX_Scale_all, 0.75)
 
+			KBS_MMS_FAIL, RFE_MMS_FAIL = feature_selection(MINMAX_Scale_all, 0.75)
+			KBS_STD_FAIL, RFE_STD_FAIL = feature_selection(MINMAX_Scale_all, 0.75)
+
+			KBS_MMS_ALL.to_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv', index=False)
+			KBS_STD_ALL.to_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv', index=False)
+			RFE_MMS_ALL.to_csv('./[step 7] Feature_Selection/[2]_RFE_MMS_All.csv', index=False)
+			RFE_STD_ALL.to_csv('./[step 7] Feature_Selection/[3]_RFE_STD_All.csv', index=False)
+
+			KBS_MMS_PASS.to_csv('./[step 7] Feature_Selection/[4]_KBS_MMS_Pass.csv', index=False)
+			KBS_STD_PASS.to_csv('./[step 7] Feature_Selection/[5]_KBS_STD_Pass.csv', index=False)
+			RFE_MMS_PASS.to_csv('./[step 7] Feature_Selection/[6]_RFE_MMS_Pass.csv', index=False)
+			RFE_STD_PASS.to_csv('./[step 7] Feature_Selection/[7]_RFE_STD_Pass.csv', index=False)
+
+			KBS_MMS_FAIL.to_csv('./[step 7] Feature_Selection/[8]_KBS_MMS_Fail.csv', index=False)
+			KBS_STD_FAIL.to_csv('./[step 7] Feature_Selection/[9]_KBS_STD_Fail.csv', index=False)
+			RFE_MMS_FAIL.to_csv('./[step 7] Feature_Selection/[10]_RFE_MMS_Fail.csv', index=False)
+			RFE_STD_FAIL.to_csv('./[step 7] Feature_Selection/[11]_RFE_STD_Fail.csv', index=False)
+			
+			print("[*] Step 7 - Complete.")
 			step = 8
-			pass
+			return
 			
 		elif(step == 8):
 			#오버 샘플링 단계
@@ -429,12 +462,60 @@ def set_data_scale(df):
 	SS.columns = save
 	return MM, SS
 
+def feature_selection(df, per):
+	# 크게 세 방법으로 구분할 수 있는데
+	# Filtering, Wrapper, Embedded가 있다.
+	# Wrapper는 실제 모델을 학습하면서 부분집합 중 중요한 것들을 얻어내는데
+	# 이번 프로젝트에서는 모델 학습이 들어가는지 안들어가는지 몰라서
+	# 일단 여러 방법 중 사이킷 런이 제공하는 몇 개의 방법으로 FE를 진행한다.
+	# Filter Method를 통해 영향력이 있는 피쳐를 파악한 뒤
+	# Wrapper Method를 사용하고 영향력이 있는 피쳐들을 집중 분석한다.
+
+	#SelectKBest (Univariate Selection - 각 피쳐간의 통계적 관계)
+	#Recursive Feature Elimination
+	#Principal Component Analysis
+	#Feature Importance check (RandomForest / ExtraTrees)
+
+	# Reference : https://velog.io/@yeonha0422/Feature-Selection
+	# Reference : https://www.kaggle.com/harangdev/feature-selection
+	## PCA 방식을 테스트 결과는 당연하지만 저차원 숫자들에게 의미가 없..
 
 
-	return 
+	## 단일 변수 선택 방식
+	df_cols = list(df.describe().columns)
+	Y_pf = df['Pass/Fail'].values
+	save = df.loc[:,['Time', 'Pass/Fail']]
 
-def feature_selection(df, num):
-	pass
+	df = df.drop(['Time', 'Pass/Fail'], axis=1)
+
+	select_df = SelectKBest(chi2, k=(int(per * len(df.columns)))).fit_transform(df, Y_pf)
+	select_df = pd.DataFrame(select_df)
+	KBS_ = pd.concat([save, select_df], axis=1)
+	#[! WARNING !] Feature 적혀있는 행이 없어짐... (KBEST이후...) 도움...
+	# 현재 피쳐 수 93(0.75기준) SelectKBest 의 내용은 레퍼런스 보몀 나와있음!
+	# 나름 사분위 per에 맞추어봤는데 이건 
+
+	## RFECV는 k-fold validation 이 필요한데, Fail의 개수가 너무 적어 사용 안함. 
+
+	model = LogisticRegression(solver='liblinear')
+	RFE_df = RFE(model, n_features_to_select=(int(per * len(df.columns))), step=1).fit(df, Y_pf)
+	# 위 모델과 비교하기 위해 피쳐 개수를 동일하게 적용
+
+	#print("Num Features: " + str(RFE_df.n_features_))
+	#print()
+	#print("Selected Features: "+ str(RFE_df.support_))
+	#print()
+	#print("Feature Ranking: "+ str(RFE_df.ranking_))
+	#print()
+
+	rank_df = pd.DataFrame(RFE_df.ranking_)
+	rank_df.index = df.columns
+	rank_list = list(RFE_df.ranking_)
+	rank_df.columns = ['prior']
+	drop_list = list(rank_df[rank_df['prior'] > 1].index)
+	df = df.drop(drop_list, axis=1)
+	RFE_ = pd.concat([save, df], axis=1)
+	return KBS_, RFE_
 
 def data_oversampling(df, num):
 	pass
@@ -445,7 +526,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(5)
+DataAnalytics(7)
 
 
 
