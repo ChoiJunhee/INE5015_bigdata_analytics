@@ -75,7 +75,7 @@ def DataAnalytics(step):
 			#print(df.describe())
 			#sns.boxplot(data = df)
 			#plt.show()
-			return
+			
 			df.to_csv('./[step 0] - rawfile_low_refine/[1]_std_1.0.csv', index=False)
 
 			print("[*] Step 0 - Complete.")
@@ -433,6 +433,7 @@ def outlier_processing(df, weight, percent):
 		IQR_max = round(q75 + (weight * IQR),2)
 
 		search = df[(df[feature] < (q25 - 1.5 * IQR)) | (df[feature] > (q75 + 1.5 * IQR))]
+		print(search)
 		remove_list.append(search)
 		
 	df = df.drop(remove_list, axis=1)
@@ -524,7 +525,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(0)
+DataAnalytics(5)
 
 
 
