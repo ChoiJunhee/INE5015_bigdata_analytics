@@ -70,6 +70,8 @@ def DataAnalytics(step):
 
 			#pre-std-remove (step 0 폴더에 1, 3, 5 셋 있습니다.)
 			df = data_std_remove(df, 1);
+			## std 편차 기준 조정 예정 (시각화 확인 후)
+			
 			#print(df.describe())
 			#sns.boxplot(data = df)
 			#plt.show()
@@ -200,7 +202,10 @@ def DataAnalytics(step):
 			s5_w15_p50_all = data_std_remove(s5_w15_p50_all, 0.5)
 			s5_w15_p50_pass = data_std_remove(s5_w15_p50_pass, 0.5)
 			s5_w15_p50_fail = data_std_remove(s5_w15_p50_fail, 0.5)
-
+			
+			# 이상치 처리 과정에서 마지막 per 부분 (피쳐 개수 고정시킬 용도) 삭제하고
+			# IQR 방식 그대로 제거 (기존에는 일부 피쳐들이 생략되었음)
+			
 			s5_w15_p50_all.to_csv('./[step 5] - DC - Oulier_refine/w15_o52_all.csv', index=False)
 			s5_w15_p50_pass.to_csv('./[step 5] - DC - Oulier_refine/w15_o50_pass.csv', index=False)
 			s5_w15_p50_fail.to_csv('./[step 5] - DC - Oulier_refine/w15_o60_fail.csv', index=False)
@@ -428,20 +433,8 @@ def outlier_processing(df, weight, percent):
 		IQR_max = round(q75 + (weight * IQR),2)
 
 		search = df[(df[feature] < (q25 - 1.5 * IQR)) | (df[feature] > (q75 + 1.5 * IQR))]
+		remove_list.append(search)
 		
-		per = round(100 * len(search)/len(df[feature]),2)
-
-		#print(feature + " - Percent : " + str(per))
-
-		#print("MED : " + str(med_num))
-		#print("IQR : " + str(IQR))
-		#print("IQR_MIN : " + str(IQR_min))
-		#print("IQR_MAX : " + str(IQR_max)+"\n")
-		outlier_over.append(per)
-		if(per >= percent):
-			remove_list.append(str(feature))
-
-	#print("Total Per : " + str(100*round(len(remove_list)/len(features), 2)))
 	df = df.drop(remove_list, axis=1)
 	return pd.concat([df_save, df], axis=1)
 
