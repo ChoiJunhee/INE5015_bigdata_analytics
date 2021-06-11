@@ -64,11 +64,16 @@ def DataAnalytics(step):
 			# raw 데이터를 정렬해서 가져옴
 			df = raw_csv('./uci-secom.csv')
 
+			print(df.describe())
+			sns.boxplot(data = df)
+			plt.show()
+
 			#pre-std-remove (step 0 폴더에 1, 3, 5 셋 있습니다.)
 			df = data_std_remove(df, 1);
 			#print(df.describe())
 			#sns.boxplot(data = df)
 			#plt.show()
+			return
 			df.to_csv('./[step 0] - rawfile_low_refine/[1]_std_1.0.csv', index=False)
 
 			print("[*] Step 0 - Complete.")
@@ -526,7 +531,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(7)
+DataAnalytics(0)
 
 
 
