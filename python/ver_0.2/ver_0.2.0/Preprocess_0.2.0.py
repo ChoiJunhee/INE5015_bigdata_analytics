@@ -516,6 +516,33 @@ def feature_selection(df, per):
 	RFE_ = pd.concat([save, df], axis=1)
 	return KBS_, RFE_
 
+def outlier_change(df, weight):
+    df_save = df.loc[:, ['Time', 'Pass/Fail']]
+    df = df.drop(['Time', 'Pass/Fail'], axis=1)
+    for i in range(0, len(list(df.columns))):
+
+        a = df[list(df.columns)[i]]
+        quantile_25 = np.percentile(a.values, 25)
+        quantile_75 = np.percentile(a.values, 75)
+        iqr = quantile_75 - quantile_25
+        iqr_weight = iqr * weight
+        lowest_val = quantile_25 - iqr_weight
+        highest_val = quantile_75 + iqr_weight
+
+        outlier_index = list(a[(a<lowest_val)|(a>highest_val)].index)
+        lowest_index = list(a[(a<lowest_val)].index)
+        highest_index= list(a[(a>highest_val)].index)
+
+        if(len(outlier_index) != 0) : 
+
+
+          for index in range(0, len(lowest_index)):
+            df.loc[[lowest_index[index]],[list(df.columns)[i]]] = lowest_val
+
+          for  index in range(0, len(highest_index)):
+            df.loc[[ highest_index[index]],[list(df.columns)[i]]] =  highest_val
+    return pd.concat([df_save, df], axis=1)
+
 def data_oversampling(df, num):
 	pass
 
