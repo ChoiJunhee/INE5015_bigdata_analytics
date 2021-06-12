@@ -195,9 +195,9 @@ def DataAnalytics(step):
 			s4_pass = pd.read_csv('./[step 4] - DC - Missing_Value_Inputation/m45_pass.csv')
 			s4_fail = pd.read_csv('./[step 4] - DC - Missing_Value_Inputation/m45_fail.csv')
 			
-			s5_w15_p50_pass = outlier_processing(s4_pass, 1.5, 5)
-			s5_w15_p50_fail = outlier_processing(s4_fail, 1.5, 6)
-			s5_w15_p50_all = outlier_processing(s4_all, 1.5, 5.2)
+			s5_w15_p50_pass = outlier_change(s4_pass, 1.5)
+			s5_w15_p50_fail = outlier_change(s4_fail, 1.75)
+			s5_w15_p50_all = outlier_change(s4_all, 1.5)
 
 			s5_w15_p50_all = data_std_remove(s5_w15_p50_all, 0.5)
 			s5_w15_p50_pass = data_std_remove(s5_w15_p50_pass, 0.5)
@@ -222,9 +222,9 @@ def DataAnalytics(step):
 			s4_pass = pd.read_csv('./[step 5] - DC - Oulier_refine/w15_o50_pass.csv')
 			s4_fail = pd.read_csv('./[step 5] - DC - Oulier_refine/w15_o60_fail.csv')
 			
-			s4_all = s4_all.drop(['F209', 'F418', 'F419', 'F433', 'F478', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511', 'F521' ], axis=1)
-			s4_pass = s4_pass.drop(['F209', 'F418', 'F419', 'F433', 'F478', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511', 'F521' ], axis=1)
-			s4_fail = s4_fail.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F488', 'F499', 'F500', 'F511', 'F521' ], axis=1)
+			s4_all = s4_all.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511' ], axis=1)
+			s4_pass = s4_pass.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511' ], axis=1)
+			s4_fail = s4_fail.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F488', 'F499', 'F500', 'F511' ], axis=1)
 
 			MINMAX_Scale_all, STD_Scale_all = set_data_scale(s4_all)
 			MINMAX_Scale_pass, STD_Scale_pass = set_data_scale(s4_pass)
@@ -520,7 +520,6 @@ def outlier_change(df, weight):
     df_save = df.loc[:, ['Time', 'Pass/Fail']]
     df = df.drop(['Time', 'Pass/Fail'], axis=1)
     for i in range(0, len(list(df.columns))):
-
         a = df[list(df.columns)[i]]
         quantile_25 = np.percentile(a.values, 25)
         quantile_75 = np.percentile(a.values, 75)
@@ -531,16 +530,15 @@ def outlier_change(df, weight):
 
         outlier_index = list(a[(a<lowest_val)|(a>highest_val)].index)
         lowest_index = list(a[(a<lowest_val)].index)
-        highest_index= list(a[(a>highest_val)].index)
+        highest_index = list(a[(a>highest_val)].index)
 
         if(len(outlier_index) != 0) : 
+        	for index in range(0, len(lowest_index)):
+        		df.loc[[lowest_index[index]],[list(df.columns)[i]]] = lowest_val
 
-
-          for index in range(0, len(lowest_index)):
-            df.loc[[lowest_index[index]],[list(df.columns)[i]]] = lowest_val
-
-          for  index in range(0, len(highest_index)):
-            df.loc[[ highest_index[index]],[list(df.columns)[i]]] =  highest_val
+        	for  index in range(0, len(highest_index)):
+        		df.loc[[ highest_index[index]],[list(df.columns)[i]]] =  highest_val
+    
     return pd.concat([df_save, df], axis=1)
 
 def data_oversampling(df, num):
