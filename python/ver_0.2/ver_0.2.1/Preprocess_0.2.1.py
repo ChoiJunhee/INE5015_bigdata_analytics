@@ -70,11 +70,6 @@ def DataAnalytics(step):
 
 			#pre-std-remove (step 0 폴더에 1, 3, 5 셋 있습니다.)
 			df = data_std_remove(df, 1);
-			## std 편차 기준 조정 예정 (시각화 확인 후)
-			
-			#print(df.describe())
-			#sns.boxplot(data = df)
-			#plt.show()
 			
 			df.to_csv('./[step 0] - rawfile_low_refine/[1]_std_1.0.csv', index=False)
 
@@ -85,33 +80,26 @@ def DataAnalytics(step):
 			# 표준편차가 극히 적은 일부 피쳐 삭제된 데이터를
 			# Pass / Fail / All 으로 나누는 과정 -> std 3.0
 			df1 = pd.read_csv('./[step 0] - rawfile_low_refine/[1]_std_1.0.csv')
-			#df3 = pd.read_csv('./[step 0] - rawfile_low_refine/[2]_std_3.0.csv')
-			print(df1)
+			#df3 (std 3.0 제거버전)은 사용하지 않습니다. df1 으로 확정되었습니다.
+
 			all_df1, pass_df1, fail_df1 = devide_PF(df1)
 			all_df1.to_csv('./[step 1] - devide_PF/std10_all.csv', index=False)
 			pass_df1.to_csv('./[step 1] - devide_PF/std10_pass.csv', index=False)
 			fail_df1.to_csv('./[step 1] - devide_PF/std10_fail.csv', index=False)
-			
-			#all_df3, pass_df3, fail_df3 = devide_PF(df)
-			#all_df3.to_csv('./[step 1] - devide_PF/std30_all.csv', index=False)
-			#pass_df3.to_csv('./[step 1] - devide_PF/std30_pass.csv', index=False)
-			#fail_df3.to_csv('./[step 1] - devide_PF/std30_fail.csv', index=False)
 			print("[*] Step 1 - Complete.")
 			step = 2
 
 		elif(step == 2):
 			# 기술적 통계 확인 : Pass 1463, Fail 104 으로 전체 데이터 데비 Fail은 6.6%
-			# 데이터 시각화 확인 -> STD30 사용
+			# 데이터 시각화 확인 -> STD10 사용
 
-			all_df = pd.read_csv('./[step 1] - devide_PF/std30_all.csv')
-			pass_df = pd.read_csv('./[step 1] - devide_PF/std30_pass.csv')
-			fail_df = pd.read_csv('./[step 1] - devide_PF/std30_fail.csv')
+			all_df = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
+			pass_df = pd.read_csv('./[step 1] - devide_PF/std10_pass.csv')
+			fail_df = pd.read_csv('./[step 1] - devide_PF/std10_fail.csv')
 
-			#sns.boxplot(data=fail_df)
-			#plt.show()
-
-			# 시각화 처리 자동화 하고싶은데 시간이 너무 없음 ㅜㅜㅜ
-			## 이 부분에서도 아직 많은 피쳐가 남아 다음 스탭 이후 다시 할 예정
+			'''
+			시각화 테스트 공간 (STEP 1 -> STEP 3으로 진행되며, 이 단계는  테스트 단계)
+			'''
 
 			all_df, pass_df, fail_df = devide_PF(df)
 			all_df.to_csv('./[step 2] - pass_fail_analysis/all.csv', index=False)
@@ -121,45 +109,23 @@ def DataAnalytics(step):
 
 			step = 3
 		elif(step == 3):
-			# Feature간 상관관계 확인 및 제거 # STD 30 선정
+			# Feature간 상관관계 확인 및 제거 # STD10 진행 
 
-			#std10_all = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
-			#std10_pass = pd.read_csv('./[step 1] - devide_PF/std10_pass.csv')
-			#std10_fail = pd.read_csv('./[step 1] - devide_PF/std10_fail.csv')
-
-			std30_all = pd.read_csv('./[step 1] - devide_PF/std30_all.csv')
-			std30_pass = pd.read_csv('./[step 1] - devide_PF/std30_pass.csv')
-			std30_fail = pd.read_csv('./[step 1] - devide_PF/std30_fail.csv')
+			std30_all = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
+			std30_pass = pd.read_csv('./[step 1] - devide_PF/std10_pass.csv')
+			std30_fail = pd.read_csv('./[step 1] - devide_PF/std10_fail.csv')
 
 
 			## corr 0.3 / 0.6 큰 의미 없음 / std3 진행
-			#s1_c30_all = correlation_remove(std10_all, 0.3, 0.8)
-			#s1_c30_pass = correlation_remove(std10_pass, 0.3, 0.8)
-			#s1_c30_fail = correlation_remove(std10_fail, 0.3, 0.8)
-
 			s3_c30_all = correlation_remove(std30_all, 0.3, 0.8)
 			s3_c30_pass = correlation_remove(std30_pass, 0.3, 0.8)
 			s3_c30_fail = correlation_remove(std30_fail, 0.3, 0.8)
-
-			#s1_c30_all.to_csv('./[step 3] - correlation/s1_c30_all.csv', index=False)
-			#s1_c30_pass.to_csv('./[step 3] - correlation/s1_c30_pass.csv', index=False)
-			#s1_c30_fail.to_csv('./[step 3] - correlation/s1_c30_fail.csv', index=False)
 
 			s3_c30_all.to_csv('./[step 3] - correlation/s3_c30_all.csv', index=False)
 			s3_c30_pass.to_csv('./[step 3] - correlation/s3_c30_pass.csv', index=False)
 			s3_c30_fail.to_csv('./[step 3] - correlation/s3_c30_fail.csv', index=False)
 
-			## 임시 시각화 (폴더에있음)
-			#sns.boxplot(data=s3_c30_pass)
-			#plt.show()
-
-			#sns.boxplot(data=s3_c30_fail)
-			#plt.show()
-
-			#print(s3_c30_all) 
-
 			print("[*] Step 3 - Complete.")
-			print("[*] Step 3 - 202 Features")
 
 			step = 4
 
@@ -170,10 +136,8 @@ def DataAnalytics(step):
 			s3_c30_pass = pd.read_csv('./[step 3] - correlation/s3_c30_pass.csv')
 			s3_c30_fail = pd.read_csv('./[step 3] - correlation/s3_c30_fail.csv')
 
-			## Missing Value Percentage > 0.45 : 삭제
-			## 0.3 < MVP < 0.45 : 중앙 값 대체 
-			## Missing Value Percentage < 0.3 : IterativeImputation
-			## -> 변경 0.5 이상 삭제, 이하 max_iter 30으로 진행. (비교필요)
+			#결측치 처리 -> 0.6 이상 비율인 경우 삭제
+			#결측치 처리 -> 0.6 미만 비율인 경우 Imputation (max-iter=30)
 
 			s4_MVP_all = missing_value_processing(s3_c30_all)
 			s4_MVP_pass = missing_value_processing(s3_c30_pass)
@@ -194,7 +158,10 @@ def DataAnalytics(step):
 			s4_all = pd.read_csv('./[step 4] - DC - Missing_Value_Inputation/m45_all.csv')
 			s4_pass = pd.read_csv('./[step 4] - DC - Missing_Value_Inputation/m45_pass.csv')
 			s4_fail = pd.read_csv('./[step 4] - DC - Missing_Value_Inputation/m45_fail.csv')
-			
+
+
+			#이상치 처리-> fail 데이터가 너무 작아 IQR 1.75로 설정했음.
+
 			s5_w15_p50_pass = outlier_change(s4_pass, 1.5)
 			s5_w15_p50_fail = outlier_change(s4_fail, 1.75)
 			s5_w15_p50_all = outlier_change(s4_all, 1.5)
@@ -222,14 +189,18 @@ def DataAnalytics(step):
 			s4_pass = pd.read_csv('./[step 5] - DC - Oulier_refine/w15_o50_pass.csv')
 			s4_fail = pd.read_csv('./[step 5] - DC - Oulier_refine/w15_o60_fail.csv')
 			
+
+			# 시각화 자료로 발견한 이상한 Feature 삭제
 			s4_all = s4_all.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511' ], axis=1)
 			s4_pass = s4_pass.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511' ], axis=1)
 			s4_fail = s4_fail.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F488', 'F499', 'F500', 'F511' ], axis=1)
 
+
+			# MINMAX / STD 두 개로 나누어 진행
 			MINMAX_Scale_all, STD_Scale_all = set_data_scale(s4_all)
 			MINMAX_Scale_pass, STD_Scale_pass = set_data_scale(s4_pass)
 			MINMAX_Scale_fail, STD_Scale_fail = set_data_scale(s4_fail)
-			##MINMAX 스케일링의 경우 0, 1을 가지는 값의 비율을 따져 제거해야 함.
+			
 
 
 			MINMAX_Scale_all.to_csv('./[step 6] - DC - scaling/MINMAX_all.csv', index=False)
@@ -246,8 +217,9 @@ def DataAnalytics(step):
 			step = 7
 			
 		elif(step == 7):
-			#Feature Selection
+			# Feature Selection
 			# step 6, step 7간 비교 시각화 자료 요청합니다. 
+			# 이 부분은 중요하니 시도한 기록을 지우지 말고 주석처리 합니다.
 
 			MINMAX_Scale_all = pd.read_csv('./[step 6] - DC - scaling/MINMAX_all.csv')
 			STD_Scale_all = pd.read_csv('./[step 6] - DC - scaling/STD_all.csv')
@@ -287,13 +259,21 @@ def DataAnalytics(step):
 			return
 			
 		elif(step == 8):
+			# oversampling, downsampling test
+			all_df = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
+			pass_df = pd.read_csv('./[step 1] - devide_PF/std10_pass.csv')
+			fail_df = pd.read_csv('./[step 1] - devide_PF/std10_fail.csv')
+			
+			print(all_df)
+			print(pass_df)
+			print(fail_df)
 			#오버 샘플링 단계
 
 			step = 9
 			pass
 
 		elif(step == 9):
-			#최종 데이터 셋 선정 단계
+			# Performance Verification [ FINAL ]
 
 			step = 10
 			print("[*] Preprocessing Complete.")
@@ -382,8 +362,7 @@ def correlation_remove(df, per, abs_num):
 
 '''
 @param - df : 결측치를 제거할 데이터 프레임
-@param - per (삭제) 0.6 이상 제거하고, 그 미만인 경우 max_iter 수치를 높여 Imputation. 
-@return - 기준 이상의 결측치를 갖는 Feature가 삭제된 데이터 프레임
+@return - 기준 이상의 결측치를 갖는 Feature는 삭제, 이외엔 보정된 데이터 프레임
 '''
 def missing_value_processing(df):
 
@@ -409,6 +388,7 @@ def missing_value_processing(df):
 
 
 '''
+!!! 버그로 인해 사용하지 않음 !!! 
 @param - weight : IQR 가중치
 @param - percent : 제거 할 때 특정 비율 이상 제거하도록 함. (세부 조정용)
 '''
@@ -440,6 +420,10 @@ def outlier_processing(df, weight, percent):
 	return pd.concat([df_save, df], axis=1)
 
 
+'''
+@param - df : dataframe
+@return MINMAX, STD 스케일링을 거친 dataframe (2개)
+'''
 def set_data_scale(df):
 	col_save = df.loc[:, ['Time', 'Pass/Fail']]
 	save = df.columns
@@ -516,6 +500,10 @@ def feature_selection(df, per):
 	RFE_ = pd.concat([save, df], axis=1)
 	return KBS_, RFE_
 
+
+'''
+@kang961105 새 이상치 처리 알고리즘
+'''
 def outlier_change(df, weight):
     df_save = df.loc[:, ['Time', 'Pass/Fail']]
     df = df.drop(['Time', 'Pass/Fail'], axis=1)
@@ -541,6 +529,8 @@ def outlier_change(df, weight):
     
     return pd.concat([df_save, df], axis=1)
 
+
+
 def data_oversampling(df, num):
 	pass
 
@@ -550,7 +540,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(5)
+DataAnalytics(0)
 
 
 
