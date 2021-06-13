@@ -143,10 +143,13 @@ def DataAnalytics(step):
 			s4_MVP_all = missing_value_processing(s3_c30_all)
 			s4_MVP_pass = missing_value_processing(s3_c30_pass)
 			s4_MVP_fail = missing_value_processing(s3_c30_fail)
-			
+
+
 			s4_MVP_all.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_all.csv', index=False)
 			s4_MVP_pass.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_pass.csv', index=False)
 			s4_MVP_fail.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_fail.csv', index=False)
+
+
 
 			print("[*] Step 4 - Complete.")
 			
@@ -190,13 +193,6 @@ def DataAnalytics(step):
 			s4_pass = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_pass.csv')
 			s4_fail = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_fail.csv')
 			
-
-			# 시각화 자료로 발견한 이상한 Feature 삭제
-			s4_all = s4_all.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511' ], axis=1)
-			s4_pass = s4_pass.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F487', 'F488', 'F489', 'F499', 'F500', 'F511' ], axis=1)
-			s4_fail = s4_fail.drop(['F418', 'F419', 'F433', 'F482', 'F486', 'F488', 'F499', 'F500', 'F511' ], axis=1)
-
-
 			# MINMAX / STD 두 개로 나누어 진행
 			MINMAX_Scale_all, STD_Scale_all = set_data_scale(s4_all)
 			MINMAX_Scale_pass, STD_Scale_pass = set_data_scale(s4_pass)
@@ -268,7 +264,7 @@ def DataAnalytics(step):
 			KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
 			KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
 
-			'''
+			
 			acc = 0
 			pre = 0
 			rec = 0
@@ -276,7 +272,7 @@ def DataAnalytics(step):
 			roc = 0
 
 			for _ in range(0, 100):
-				OVER = data_oversampling(KBS_STD_ALL)
+				OVER = data_oversampling(KBS_MMS_ALL)
 				a, b, c, d, e = Confuse_Matrix_Performance(OVER)
 				acc += a
 				pre += b
@@ -290,7 +286,7 @@ def DataAnalytics(step):
 			roc = round(roc/100, 4)
 			print("\n\nKBS_STD_ALL")
 			print(acc, pre, rec, f1, roc)
-			'''
+			
 			
 			step = 9
 			pass
@@ -595,7 +591,7 @@ def visual2(df):
 	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(7)
+DataAnalytics(5)
 
 
 
