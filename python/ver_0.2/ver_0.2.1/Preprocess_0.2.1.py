@@ -22,6 +22,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve
 
+from imblearn.over_sampling import SMOTE
+
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
 # @return (미구현) 점수 리스트 
@@ -32,7 +34,7 @@ def Confuse_Matrix_Performance(df):
 	X = new_df.iloc[1:, 1:]
 	Y = new_df.iloc[1:, 0]
 
-	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.25, stratify=Y)
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.2, stratify=Y)
 	lr_clf = LogisticRegression()
 	lr_clf.fit(X_train, Y_train)
 	pred = lr_clf.predict(X_test)
@@ -46,7 +48,8 @@ def Confuse_Matrix_Performance(df):
 	roc_auc = roc_auc_score(Y_test, pred_proba)
 	print("Confusion Matrix")
 	print(matrix)
-	print('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
+	result = ('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
+	return result
 
 
 '''
@@ -198,7 +201,7 @@ def DataAnalytics(step):
 			MINMAX_Scale_all, STD_Scale_all = set_data_scale(s4_all)
 			MINMAX_Scale_pass, STD_Scale_pass = set_data_scale(s4_pass)
 			MINMAX_Scale_fail, STD_Scale_fail = set_data_scale(s4_fail)
-			
+
 
 
 			MINMAX_Scale_all.to_csv('./[step 6] - DC - scaling/MINMAX_all.csv', index=False)
@@ -219,6 +222,8 @@ def DataAnalytics(step):
 			# step 6, step 7간 비교 시각화 자료 요청합니다. 
 			# 이 부분은 중요하니 시도한 기록을 지우지 말고 주석처리 합니다.
 
+			## MINMAX와 STD간의 차이가 매우 적어 MMS으로 진행합니다.
+
 			MINMAX_Scale_all = pd.read_csv('./[step 6] - DC - scaling/MINMAX_all.csv')
 			STD_Scale_all = pd.read_csv('./[step 6] - DC - scaling/STD_all.csv')
 			
@@ -229,25 +234,26 @@ def DataAnalytics(step):
 			STD_Scale_fail = pd.read_csv('./[step 6] - DC - scaling/STD_fail.csv')
 			
 			KBS_MMS_ALL, RFE_MMS_ALL = feature_selection(MINMAX_Scale_all, 0.75)
-			KBS_STD_ALL, RFE_STD_ALL = feature_selection(MINMAX_Scale_all, 0.75)
-
-			KBS_MMS_PASS, RFE_MMS_PASS = feature_selection(MINMAX_Scale_all, 0.75)
-			KBS_STD_PASS, RFE_STD_PASS = feature_selection(MINMAX_Scale_all, 0.75)
-
-			KBS_MMS_FAIL, RFE_MMS_FAIL = feature_selection(MINMAX_Scale_all, 0.75)
-			KBS_STD_FAIL, RFE_STD_FAIL = feature_selection(MINMAX_Scale_all, 0.75)
+			#KBS_STD_ALL, RFE_STD_ALL = feature_selection(MINMAX_Scale_all, 0.75)
 
 			KBS_MMS_ALL.to_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv', index=False)
 			KBS_STD_ALL.to_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv', index=False)
-			RFE_MMS_ALL.to_csv('./[step 7] Feature_Selection/[2]_RFE_MMS_All.csv', index=False)
-			RFE_STD_ALL.to_csv('./[step 7] Feature_Selection/[3]_RFE_STD_All.csv', index=False)
+
 
 			#visual2(KBS_MMS_FAIL)
 			#visual2(KBS_STD_FAIL)
 			#visual2(RFE_MMS_FAIL)
 			#visual2(RFE_STD_FAIL)
-			Confuse_Matrix_Performance(RFE_MMS_ALL)
-			return
+
+			#print("KBS")
+			#Confuse_Matrix_Performance(KBS_MMS_ALL)
+			#Confuse_Matrix_Performance(KBS_STD_ALL)
+			#print("RFE")
+			#Confuse_Matrix_Performance(RFE_MMS_ALL)
+			#Confuse_Matrix_Performance(RFE_STD_ALL)
+
+			## 확인 결과 MMS와 STD간의 큰 차이는 없었음 ##
+			## 그치만 오버샘플링/다운샘플링 진행은 하고 결정 예정 ##
 
 			KBS_MMS_PASS.to_csv('./[step 7] Feature_Selection/[4]_KBS_MMS_Pass.csv', index=False)
 			KBS_STD_PASS.to_csv('./[step 7] Feature_Selection/[5]_KBS_STD_Pass.csv', index=False)
@@ -265,13 +271,28 @@ def DataAnalytics(step):
 			
 		elif(step == 8):
 			# oversampling, downsampling test
-			all_df = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
-			pass_df = pd.read_csv('./[step 1] - devide_PF/std10_pass.csv')
-			fail_df = pd.read_csv('./[step 1] - devide_PF/std10_fail.csv')
-			
-			print(all_df)
-			print(pass_df)
-			print(fail_df)
+			KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
+			KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
+			RFE_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[2]_RFE_MMS_All.csv')
+			RFE_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[3]_RFE_STD_All.csv')
+
+			KBS_MMS_OVER = data_oversampling(KBS_MMS_ALL, 0)
+			KBS_STD_OVER = data_oversampling(KBS_STD_ALL, 0)
+			RFE_MMS_OVER = data_oversampling(RFE_MMS_ALL, 0)
+			RFE_STD_OVER = data_oversampling(RFE_STD_ALL, 0)
+
+			print("RFE_MMS")
+			print(Confuse_Matrix_Performance(RFE_MMS_OVER))
+			print("RFE_STD")
+			print(Confuse_Matrix_Performance(RFE_STD_OVER))
+			print("KBS_MMS")
+			print(Confuse_Matrix_Performance(KBS_MMS_OVER))
+			print("KBS STD")
+			print(Confuse_Matrix_Performance(KBS_STD_OVER))
+
+
+
+
 			#오버 샘플링 단계
 
 			step = 9
@@ -538,7 +559,12 @@ def outlier_change(df, weight):
 
 
 def data_oversampling(df, num):
-	pass
+	smote = SMOTE(random_state=num)
+	save_col = df.loc[:, 'Time']
+	X = df.drop(['Time'], axis=1)
+	Y = df['Pass/Fail']
+	X_train_over, y_train_over = smote.fit_resample(X, list(Y))
+	return pd.concat([save_col, X_train_over], axis=1)
 
 ## Fail데이터를 오버샘플링 한 결과물과
 ## Pass데이터를 언더샘플링을 한 결과물을 비교할 예정
