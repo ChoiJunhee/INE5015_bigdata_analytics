@@ -14,6 +14,7 @@ import seaborn as sns
 import os.path
 
 from sklearn.feature_selection import RFE, SelectKBest, chi2
+from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
@@ -27,14 +28,11 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_a
 def Confuse_Matrix_Performance(df):
 	#https://injo.tistory.com/13
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
-	X = df.iloc[1:, 1:]
-	Y = df.iloc[1:, 0]
-	print(" X ")
-	print(X)
-	print("\n Y ")
-	print(Y)
-	print()
-	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.3, stratify=Y)
+	new_df = df.drop(['Time'], axis=1)
+	X = new_df.iloc[1:, 1:]
+	Y = new_df.iloc[1:, 0]
+
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.25, stratify=Y)
 	lr_clf = LogisticRegression()
 	lr_clf.fit(X_train, Y_train)
 	pred = lr_clf.predict(X_test)
@@ -148,7 +146,7 @@ def DataAnalytics(step):
 			s4_MVP_fail.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_fail.csv', index=False)
 
 			print("[*] Step 4 - Complete.")
-			return
+			
 			step = 5
 			
 
@@ -243,6 +241,13 @@ def DataAnalytics(step):
 			KBS_STD_ALL.to_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv', index=False)
 			RFE_MMS_ALL.to_csv('./[step 7] Feature_Selection/[2]_RFE_MMS_All.csv', index=False)
 			RFE_STD_ALL.to_csv('./[step 7] Feature_Selection/[3]_RFE_STD_All.csv', index=False)
+
+			#visual2(KBS_MMS_FAIL)
+			#visual2(KBS_STD_FAIL)
+			#visual2(RFE_MMS_FAIL)
+			#visual2(RFE_STD_FAIL)
+			Confuse_Matrix_Performance(RFE_MMS_ALL)
+			return
 
 			KBS_MMS_PASS.to_csv('./[step 7] Feature_Selection/[4]_KBS_MMS_Pass.csv', index=False)
 			KBS_STD_PASS.to_csv('./[step 7] Feature_Selection/[5]_KBS_STD_Pass.csv', index=False)
@@ -385,7 +390,6 @@ def missing_value_processing(df):
 		save_cols = list(remove_data.describe().columns)
 		imputed_df = pd.DataFrame(IterativeImputer(max_iter=30, verbose=False).fit_transform(remove_data), columns=save_cols)
 		processed_df = imputed_df
-	print(processed_df)
 	return processed_df
 
 
@@ -539,10 +543,36 @@ def data_oversampling(df, num):
 ## Fail데이터를 오버샘플링 한 결과물과
 ## Pass데이터를 언더샘플링을 한 결과물을 비교할 예정
 
+'''
+임시함수
+'''
+def visual(df):
+	features = list(df.columns)
+	plt.figure(figsize=(40,200))
 
+	for i, feature in enumerate(features[2:]):
+		print(i)
+		print(feature)
+		plt.subplot(12, 10, i+1)
+		sns.boxplot(x="Pass/Fail",
+					y=df[feature],
+					data=df)
+	#plt.show()
+	#plt.savefig('[5]KBS_STD_PASS.png')
+
+def visual2(df):
+	features = list(df.columns)
+	plt.figure(figsize=(40, 200))
+
+	for i, feature in enumerate(features[2:]):
+		print(feature)
+		plt.subplot(12, 10, i+1)
+		sns.boxplot(y=df[feature],
+					data=df[feature])
+	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(4)
+DataAnalytics(7)
 
 
 
