@@ -272,7 +272,7 @@ def DataAnalytics(step):
 			roc = 0
 
 			for _ in range(0, 100):
-				OVER = data_oversampling(KBS_MMS_ALL)
+				OVER = data_oversampling(KBS_STD_ALL)
 				a, b, c, d, e = Confuse_Matrix_Performance(OVER)
 				acc += a
 				pre += b
@@ -591,28 +591,4 @@ def visual2(df):
 	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(5)
-
-
-
-'''
-F209
-F418
-F419
-F433
-F478
-
-F482
-F486
-F487
-F488
-F489
-
-F499
-F500
-F511
-F521
-
-이 외에도 더 있을 수 있음
-
-'''
+DataAnalytics(8)
