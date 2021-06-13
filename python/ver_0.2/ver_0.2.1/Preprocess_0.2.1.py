@@ -126,7 +126,7 @@ def DataAnalytics(step):
 			s3_c30_fail.to_csv('./[step 3] - correlation/s3_c30_fail.csv', index=False)
 
 			print("[*] Step 3 - Complete.")
-
+			
 			step = 4
 
 		elif(step == 4):
@@ -142,13 +142,13 @@ def DataAnalytics(step):
 			s4_MVP_all = missing_value_processing(s3_c30_all)
 			s4_MVP_pass = missing_value_processing(s3_c30_pass)
 			s4_MVP_fail = missing_value_processing(s3_c30_fail)
-
 			
 			s4_MVP_all.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_all.csv', index=False)
 			s4_MVP_pass.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_pass.csv', index=False)
 			s4_MVP_fail.to_csv('./[step 4] - DC - Missing_Value_Inputation/m45_fail.csv', index=False)
 
 			print("[*] Step 4 - Complete.")
+			return
 			step = 5
 			
 
@@ -353,6 +353,7 @@ def correlation_remove(df, per, abs_num):
 	corr_df['sum'] = corr_pc[0] + corr_pc[1]
 	corr_df = corr_df.sort_values(by=['sum'], axis=0, ascending=False)
 
+
 	extract = []
 	for i in range(0, int(len(corr_df.index) * per)):
 		extract.append(list(corr_df.index)[i])
@@ -370,7 +371,7 @@ def missing_value_processing(df):
 	null_df = pd.DataFrame(null_data)
 	null_df['null_per'] = (null_df[0] / len(null_df.index))
 
-	null_list = null_df[null_df['null_per'] > 0.5].index
+	null_list = null_df[null_df['null_per'] > 0.6].index
 	remove_data = df.drop(null_list, axis=1)
 	save_cols = list(remove_data.describe().columns)
 
@@ -384,6 +385,7 @@ def missing_value_processing(df):
 		save_cols = list(remove_data.describe().columns)
 		imputed_df = pd.DataFrame(IterativeImputer(max_iter=30, verbose=False).fit_transform(remove_data), columns=save_cols)
 		processed_df = imputed_df
+	print(processed_df)
 	return processed_df
 
 
@@ -540,7 +542,7 @@ def data_oversampling(df, num):
 
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(0)
+DataAnalytics(4)
 
 
 
