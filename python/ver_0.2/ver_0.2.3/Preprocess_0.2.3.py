@@ -13,16 +13,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
 import xgboost
+import warnings
 
 from sklearn.feature_selection import RFE, SelectKBest, chi2
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
+from sklearn.model_selection import GridSearchCV
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
-from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve, mean_squared_error
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import make_scorer, accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve, mean_squared_error
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
@@ -30,38 +32,34 @@ from imblearn.under_sampling import CondensedNearestNeighbour, RandomUnderSample
 
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
-# @return 점수 리스트
-def Confuse_Matrix_Performance(df, n):
+# @return 점수 리스트 = train_test_split(X, Y, test_size=0.2, stratify=Y)
+def Confuse_Matrix_Performance(X_train, X_test, Y_train, Y_test, n):
 	#https://injo.tistory.com/13
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
-	X = df.iloc[1:, 1:]
-	Y = df.iloc[1:, 0]
+	warnings.filterwarnings(action='ignore')
 
-	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y)
-	
 	if(n==0):
-		lr_clf = LogisticRegression()
+		clf = LogisticRegression()
 	elif(n==1):
-		lr_clf = DecisionTreeClassifier(max_depth=3)
+		clf = DecisionTreeClassifier(max_depth=10)
 	elif(n==2):
-		lr_clf = RandomForestRegressor(max_depth=3, n_estimators=100)
+		clf = RandomForestClassifier(max_depth=10, n_estimators=120)
 	else:
-		lr_clf = xgboost.XGBRegressor(max_depth=3, n_estimators=100, eta=0.1)
-	lr_clf.fit(X_train, Y_train)
-	pred = lr_clf.predict(X_test)
-
-	if(n<2):
-		pred_proba = lr_clf.predict_proba(X_test)
+		clf = xgboost.XGBClassifier(learning_rate=0.1, max_depth=10, n_estimators=120)
+	
+	clf.fit(X_train, Y_train)
+	pred = clf.predict(X_test)
+	roc_auc = roc_auc_score(Y_test, pred)
 
 	matrix = confusion_matrix(Y_test, y_pred=pred)
 	accuracy = accuracy_score(Y_test, pred)
 	precision = precision_score(Y_test, pred)
 	recall = recall_score(Y_test, pred)
 	f1 = f1_score(Y_test, pred)
-	roc_auc = roc_auc_score(Y_test, pred_proba)
+	
 	#print("Confusion Matrix")
 	#print(matrix)
-	result = ('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
+	#result = ('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
 	return accuracy, precision, recall, f1, roc_auc
 
 '''
@@ -268,14 +266,17 @@ def DataAnalytics(step):
 			
 		elif(step == 8):
 			# oversampling, downsampling test
-			RFE_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_RFE_MMS_All.csv')
-			RFE_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_RFE_STD_All.csv')
+			FINAL_SET = pd.read_csv('./[step 7] Feature_Selection/[0]_RFE_MMS_All.csv')
+			#RFE_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_RFE_STD_All.csv')
 			#KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
 			#KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
 			#RFE_MMS_TEST = correlation_remove(RFE_MMS_TEST, 0.1, 0.8)
-			RFE_OVER = data_oversampling(RFE_MMS_ALL)
+			
+			X = FINAL_SET.iloc[:, 2:]
+			Y = FINAL_SET.iloc[:, 1]
 
-			RFE_MMS.to_csv('./[step 8] Data_Oversampling/RFE_MMS.csv', index=False)
+			data_performance(X, Y)
+			
 			'''
 			test = RFE_MMS.drop(['Time'], axis=1).corr()
 
@@ -292,16 +293,10 @@ def DataAnalytics(step):
 			### smote_LOGISTIC PERFORM_에서는 corr 제거가 부정적 영향을 끼침
 
 			### 성능 평가 부분 모듈화 하였습니다.
-			
-			step = 9
-			print("[*] Step 8 - Complete")
-
-		elif(step == 9):
 			# Performance Verification [ FINAL ]
-			FINAL_SET = pd.read_csv('./[step 8] Data_Oversampling/RFE_MMS.csv')
-			data_performance(FINAL_SET)
-			step = 10
+			
 			print("[*] Preprocessing Complete.")
+			break
 		else:
 			pass
 	# 반복문 종료 - Preprocessing Complete.
@@ -558,45 +553,100 @@ def outlier_change(df, weight):
     return pd.concat([df_save, df], axis=1)
 
 
-def data_performance(df):
+def data_performance(X, Y):
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, stratify=Y)
+	warnings.filterwarnings(action='ignore')
+	
+	Y_train = pd.DataFrame(Y_train, columns=['Pass/Fail'])
+	NEWDF = pd.concat([Y_train, X_train], axis=1)
+	NEWDF = data_oversampling(NEWDF)
+	Y_train = NEWDF.iloc[:, 0]
+	X_train = NEWDF.iloc[:, 1:]
 
-	for n in range(2,4):
+
+	'''
+	LR_CLF = LogisticRegression()
+	params={'penalty':['l2', 'none']}
+
+	grid_clf = GridSearchCV(LR_CLF, param_grid=params, scoring='accuracy', cv=3 )
+	grid_clf.fit(X_train, Y_train)
+	LR_PARAM = grid_clf.best_params_
+	print(LR_PARAM)
+
+
+	# DT_GCV
+	DT_CLF = DecisionTreeClassifier()
+	parameters = {'max_depth': [3, 5, 7],
+	              'min_samples_split': [3, 5],
+	              'splitter': ['best', 'random']}
+
+	grid_dt = GridSearchCV(DT_CLF, param_grid = parameters, cv = 5, n_jobs = -1)
+	grid_dt.fit(X_train, Y_train)
+	DT_PARAM = grid_dt.cv_results_['params']
+	print(DT_PARAM)
+
+	# RF_GCV
+	RF_CLF = RandomForestClassifier(random_state = 0, n_jobs = -1)
+	params = { 'n_estimators' : [10, 100],
+           'max_depth' : [6, 8, 10, 12],
+           'min_samples_leaf' : [8, 12, 18],
+           'min_samples_split' : [8, 16, 20]
+            }
+	grid_cv = GridSearchCV(RF_CLF, param_grid = params, cv = 3, n_jobs = -1)
+	grid_cv.fit(X_train,Y_train)
+	RF_PARAM = grid_cv.best_params_
+	print(RF_PARAM)
+
+	# XGB-GCV 
+	XGB_CLF = xgboost.XGBClassifier()
+
+	xgb_parameters = {'n_estimators':[120, 150, 170], 'learning_rate':[0.07, 0.1,0.15], 'max_depth':[2, 3, 4]}
+	xgb_grid = GridSearchCV(XGB_CLF, param_grid=xgb_parameters,scoring=make_scorer(recall_score),  cv=3, refit=True)
+	xgb_grid.fit(X_train, Y_train)
+	XG_PARAM = xgb_grid.best_params_
+	print(XG_PARAM)
+'''
+	results = []
+	for n in range(0,4):
 		acc = 0
 		pre = 0
 		rec = 0
 		f1 = 0
 		roc = 0
-		for _ in range(0, 1000):
-			OVER = data_oversampling(df)
-			OVER = OVER.dropna()
-			a, b, c, d, e = Confuse_Matrix_Performance(OVER, n)
+
+		for _ in range(0, 100):
+			a, b, c, d, e = Confuse_Matrix_Performance(X_train, X_test, Y_train, Y_test, n)
 			acc += a
 			pre += b
 			rec += c
 			f1 += d
 			roc += e
-		acc = round(acc/1000, 4)
-		pre = round(pre/1000, 4)
-		rec = round(rec/1000, 4)
-		f1 = round(f1/1000, 4)
-		roc = round(roc/1000, 4)
+		acc = round(acc/100, 4)
+		pre = round(pre/100, 4)
+		rec = round(rec/100, 4)
+		f1 = round(f1/100, 4)
+		roc = round(roc/100, 4)
+		results.append([acc, pre, rec, f1, roc])
+
+	for n in range(4):
 		if(n==0):
-			print("LogisticRegression")
+			print("\n\n\n\nLogisticRegression")
 		elif(n==1):
-			print("DecisionTree")
+			print("\n\n\n\nDecisionTree")
 		elif(n==2):
-			print("RandomForest")
+			print("\n\n\n\nRandomForest")
 		else:
-			print("XGBOOST")
-		print(acc, pre, rec, f1, roc)
+			print("\n\n\n\nXGBOOST")
+		print(results[n])
+
 
 def data_oversampling(df):
-	smote = SMOTEENN()
-	save_col = df.loc[:, 'Time']
-	X = df.drop(['Time'], axis=1)
+	smote = SMOTE()
+	X = df.drop(['Pass/Fail'], axis=1)
 	Y = df['Pass/Fail']
-	X_train_over, y_train_over = smote.fit_resample(X, list(Y))
-	return X_train_over
+	X_train_over, Y_train_over = smote.fit_resample(X, list(Y))
+	Y_train_over = pd.DataFrame(Y_train_over)
+	return pd.concat([Y_train_over, X_train_over],axis=1)
 
 def data_undersampling(df):
 	save_col = df.loc[:, ['Time', 'Pass/Fail']]
@@ -641,4 +691,4 @@ def visual2(df):
 	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(9)
+DataAnalytics(8)
