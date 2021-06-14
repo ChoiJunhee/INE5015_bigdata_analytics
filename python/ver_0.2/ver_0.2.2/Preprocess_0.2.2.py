@@ -65,9 +65,6 @@ def DataAnalytics(step):
 			# raw 데이터를 정렬해서 가져옴
 			df = raw_csv('./uci-secom.csv')
 
-			print(df.describe())
-			sns.boxplot(data = df)
-			plt.show()
 
 			#pre-std-remove (step 0 폴더에 1, 3, 5 셋 있습니다.)
 			df = data_std_remove(df, 1);
@@ -115,7 +112,6 @@ def DataAnalytics(step):
 			std30_all = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
 			std30_pass = pd.read_csv('./[step 1] - devide_PF/std10_pass.csv')
 			std30_fail = pd.read_csv('./[step 1] - devide_PF/std10_fail.csv')
-
 
 			## corr 0.3 / 0.6 큰 의미 없음 / std3 진행
 			s3_c30_all = correlation_remove(std30_all, 0.3, 0.8)
@@ -176,7 +172,7 @@ def DataAnalytics(step):
 			
 			# 이상치 처리 과정에서 마지막 per 부분 (피쳐 개수 고정시킬 용도) 삭제하고
 			# IQR 방식 그대로 제거 (기존에는 일부 피쳐들이 생략되었음)
-			
+
 			s5_w15_p50_all.to_csv('./[step 5] - DC - Oulier_refine/w10_all.csv', index=False)
 			s5_w15_p50_pass.to_csv('./[step 5] - DC - Oulier_refine/w10_pass.csv', index=False)
 			s5_w15_p50_fail.to_csv('./[step 5] - DC - Oulier_refine/w10_fail.csv', index=False)
@@ -192,7 +188,8 @@ def DataAnalytics(step):
 			s4_all = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_all.csv')
 			s4_pass = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_pass.csv')
 			s4_fail = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_fail.csv')
-			
+
+
 			# MINMAX / STD 두 개로 나누어 진행
 			MINMAX_Scale_all, STD_Scale_all = set_data_scale(s4_all)
 			MINMAX_Scale_pass, STD_Scale_pass = set_data_scale(s4_pass)
@@ -264,6 +261,20 @@ def DataAnalytics(step):
 			KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
 			KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
 
+			RFE_MMS = data_oversampling(RFE_MMS_ALL)
+			RFE_MMS = correlation_remove(RFE_MMS, 0.6, 0.8)
+			'''
+			test = RFE_MMS.drop(['Time'], axis=1).corr()
+
+			mask = np.zeros_like(test, dtype=np.bool)
+			mask[np.triu_indices_from(mask)] = True
+
+			sns.heatmap(test, cmap='RdYlGn_r', mask=mask)#, annot=True)
+			plt.title("heatmap", fontsize=20)
+			plt.savefig('heat1.png')
+			plt.show()
+			return
+			
 			
 			acc = 0
 			pre = 0
@@ -272,7 +283,7 @@ def DataAnalytics(step):
 			roc = 0
 
 			for _ in range(0, 100):
-				OVER = data_oversampling(KBS_STD_ALL)
+				OVER = data_oversampling(RFE_MMS)
 				a, b, c, d, e = Confuse_Matrix_Performance(OVER)
 				acc += a
 				pre += b
@@ -284,9 +295,9 @@ def DataAnalytics(step):
 			rec = round(rec/100, 4)
 			f1 = round(f1/100, 4)
 			roc = round(roc/100, 4)
-			print("\n\nKBS_STD_ALL")
+			print("\n\nRFE_MMS")
 			print(acc, pre, rec, f1, roc)
-			
+			'''
 			
 			step = 9
 			pass
@@ -376,7 +387,7 @@ def correlation_remove(df, per, abs_num):
 	extract = []
 	for i in range(0, int(len(corr_df.index) * per)):
 		extract.append(list(corr_df.index)[i])
-
+	extract.remove("Pass/Fail")
 	return df.drop(extract, axis=1)
 
 
