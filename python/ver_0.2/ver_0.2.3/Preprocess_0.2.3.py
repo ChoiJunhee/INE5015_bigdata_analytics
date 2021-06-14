@@ -36,27 +36,24 @@ def Confuse_Matrix_Performance(df):
 
 	ORIGIN_DATA = pd.read_csv('./uci-secom.csv')
 	Y_test = ORIGIN_DATA.loc[:, ['Pass/Fail']]
-	X_test = ORIGIN_DATA.drop(['Pass/Fail'], axis=1).iloc[0:, 1:].add_prefix('F')
+	X_test = ORIGIN_DATA.drop(['Pass/Fail'], axis=1).iloc[0:, 1:]
 	X_test = pd.DataFrame(scaler.fit_transform(X_test))
-	X_test = X_test.fillna(0)
+	X_test = X_test.fillna(0).add_prefix('F')
 	
-	'''
-	X_test = X_test.fillna(0)
-	Xtest_col = list(X_test.columns)
-
-	
-	for i in Xtrain_col:
-		Xtest_col.remove(i)
-	X_train = X_train.reindex(labels=Xtest_col,axis=1)
-	X_train = X_train.fillna(0)
-	
-	'''
 
 	TRAIN_DATA = df.drop(['Time'], axis=1)
 	X_train = TRAIN_DATA.iloc[1:, 1:]
 	Y_train = TRAIN_DATA.iloc[1:, 0]
-	X_train = X_train.reindex(labels=X_test.columns, axis=1)
-	X_train = X_train.fillna(0)
+	
+	
+	X_train_cols = list(X_train.columns)
+	X_test_cols = list(X_test.columns)
+	new_cols = []
+	for i in X_test_cols:
+		if (i not in X_train_cols):
+			new_cols.append(i)
+
+	X_test = X_test.drop(new_cols, axis=1)
 
 	model = LogisticRegression()
 	model.fit(X_train, Y_train)
@@ -312,7 +309,7 @@ def DataAnalytics(step):
 			rec = 0
 			f1 = 0
 			roc = 0
-			for _ in range(0, 100):
+			for _ in range(0, 10):
 				OVER = data_oversampling(RFE_MMS_ALL)
 				OVER = OVER.dropna()
 				a, b, c, d, e = Confuse_Matrix_Performance(OVER)
@@ -646,4 +643,4 @@ def visual2(df):
 	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(0)
+DataAnalytics(8)
