@@ -505,6 +505,7 @@ def feature_selection(df, per):
 	select_df = SelectKBest(chi2, k=(int(per * len(df.columns)))).fit_transform(df, Y_pf)
 	select_df = pd.DataFrame(select_df)
 	KBS_ = pd.concat([save, select_df], axis=1)
+
 	#[! WARNING !] Feature 적혀있는 행이 없어짐... (KBEST이후...) 도움...
 	# 현재 피쳐 수 93(0.75기준) SelectKBest 의 내용은 레퍼런스 보몀 나와있음!
 	# 나름 사분위 per에 맞추어봤는데 이건 
