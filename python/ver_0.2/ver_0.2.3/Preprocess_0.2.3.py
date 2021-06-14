@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os.path
+import xgboost
 
 from sklearn.feature_selection import RFE, SelectKBest, chi2
 from sklearn.model_selection import train_test_split
@@ -20,8 +21,9 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
-from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve
-
+from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve, mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeClassifier
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
 from imblearn.under_sampling import CondensedNearestNeighbour, RandomUnderSampler
@@ -29,17 +31,27 @@ from imblearn.under_sampling import CondensedNearestNeighbour, RandomUnderSample
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
 # @return 점수 리스트
-def Confuse_Matrix_Performance(df):
+def Confuse_Matrix_Performance(df, n):
 	#https://injo.tistory.com/13
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
 	X = df.iloc[1:, 1:]
 	Y = df.iloc[1:, 0]
 
 	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y)
-	lr_clf = LogisticRegression()
+	
+	if(n==0):
+		lr_clf = LogisticRegression()
+	elif(n==1):
+		lr_clf = DecisionTreeClassifier(max_depth=3)
+	elif(n==2):
+		lr_clf = RandomForestRegressor(max_depth=3, n_estimators=100)
+	else:
+		lr_clf = xgboost.XGBRegressor(max_depth=3, n_estimators=100, eta=0.1)
 	lr_clf.fit(X_train, Y_train)
 	pred = lr_clf.predict(X_test)
-	pred_proba = lr_clf.predict_proba(X_test)[:, 1:]
+
+	if(n<2):
+		pred_proba = lr_clf.predict_proba(X_test)
 
 	matrix = confusion_matrix(Y_test, y_pred=pred)
 	accuracy = accuracy_score(Y_test, pred)
@@ -281,13 +293,13 @@ def DataAnalytics(step):
 
 			### 성능 평가 부분 모듈화 하였습니다.
 			
-			
 			step = 9
-			print("[*] Step 9 - Complete")
+			print("[*] Step 8 - Complete")
 
 		elif(step == 9):
 			# Performance Verification [ FINAL ]
-
+			FINAL_SET = pd.read_csv('./[step 8] Data_Oversampling/RFE_MMS.csv')
+			data_performance(FINAL_SET)
 			step = 10
 			print("[*] Preprocessing Complete.")
 		else:
@@ -547,30 +559,36 @@ def outlier_change(df, weight):
 
 
 def data_performance(df):
-	#RFE_MMS = correlation_remove(RFE_MMS, 0.6, 0.8)
-	acc = 0
-	pre = 0
-	rec = 0
-	f1 = 0
-	roc = 0
-	for _ in range(0, 1000):
-		OVER = data_oversampling(RFE_MMS_ALL)
-		OVER = OVER.dropna()
-		print(OVER)
-		a, b, c, d, e = Confuse_Matrix_Performance(OVER)
-		acc += a
-		pre += b
-		rec += c
-		f1 += d
-		roc += e
-	acc = round(acc/1000, 4)
-	pre = round(pre/1000, 4)
-	rec = round(rec/1000, 4)
-	f1 = round(f1/1000, 4)
-	roc = round(roc/1000, 4)
-	print("\n\n[SMOTEENN] RFE_MMS")
-	print(acc, pre, rec, f1, roc)
-	pass
+
+	for n in range(2,4):
+		acc = 0
+		pre = 0
+		rec = 0
+		f1 = 0
+		roc = 0
+		for _ in range(0, 1000):
+			OVER = data_oversampling(df)
+			OVER = OVER.dropna()
+			a, b, c, d, e = Confuse_Matrix_Performance(OVER, n)
+			acc += a
+			pre += b
+			rec += c
+			f1 += d
+			roc += e
+		acc = round(acc/1000, 4)
+		pre = round(pre/1000, 4)
+		rec = round(rec/1000, 4)
+		f1 = round(f1/1000, 4)
+		roc = round(roc/1000, 4)
+		if(n==0):
+			print("LogisticRegression")
+		elif(n==1):
+			print("DecisionTree")
+		elif(n==2):
+			print("RandomForest")
+		else:
+			print("XGBOOST")
+		print(acc, pre, rec, f1, roc)
 
 def data_oversampling(df):
 	smote = SMOTEENN()
@@ -623,4 +641,4 @@ def visual2(df):
 	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(8)
+DataAnalytics(9)
