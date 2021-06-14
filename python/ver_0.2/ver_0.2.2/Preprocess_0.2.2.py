@@ -23,6 +23,8 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, roc_curve
 
 from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTEENN
+from imblearn.under_sampling import CondensedNearestNeighbour, RandomUnderSampler
 
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
@@ -30,15 +32,38 @@ from imblearn.over_sampling import SMOTE
 def Confuse_Matrix_Performance(df):
 	#https://injo.tistory.com/13
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
-	new_df = df.drop(['Time'], axis=1)
-	X = new_df.iloc[1:, 1:]
-	Y = new_df.iloc[1:, 0]
+	scaler = MinMaxScaler()
 
-	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=777, test_size=0.2, stratify=Y)
-	lr_clf = LogisticRegression()
-	lr_clf.fit(X_train, Y_train)
-	pred = lr_clf.predict(X_test)
-	pred_proba = lr_clf.predict_proba(X_test)[:, 1:]
+	ORIGIN_DATA = pd.read_csv('./uci-secom.csv')
+	Y_test = ORIGIN_DATA.loc[:, ['Pass/Fail']]
+	X_test = ORIGIN_DATA.drop(['Pass/Fail'], axis=1).iloc[0:, 1:].add_prefix('F')
+	X_test = pd.DataFrame(scaler.fit_transform(X_test))
+	X_test = X_test.fillna(0)
+	
+	'''
+	X_test = X_test.fillna(0)
+	Xtest_col = list(X_test.columns)
+
+	
+	for i in Xtrain_col:
+		Xtest_col.remove(i)
+	X_train = X_train.reindex(labels=Xtest_col,axis=1)
+	X_train = X_train.fillna(0)
+	
+	'''
+
+	TRAIN_DATA = df.drop(['Time'], axis=1)
+	X_train = TRAIN_DATA.iloc[1:, 1:]
+	Y_train = TRAIN_DATA.iloc[1:, 0]
+	X_train = X_train.reindex(labels=X_test.columns, axis=1)
+	X_train = X_train.fillna(0)
+
+	model = LogisticRegression()
+	model.fit(X_train, Y_train)
+
+	pred = model.predict(X_test)
+	pred_proba = model.predict_proba(X_test)[:, 1:]
+
 
 	matrix = confusion_matrix(Y_test, y_pred=pred)
 	accuracy = accuracy_score(Y_test, pred)
@@ -67,9 +92,9 @@ def DataAnalytics(step):
 
 
 			#pre-std-remove (step 0 폴더에 1, 3, 5 셋 있습니다.)
-			df = data_std_remove(df, 1);
+			df = data_std_remove(df, 0.5);
 			
-			df.to_csv('./[step 0] - rawfile_low_refine/[1]_std_1.0.csv', index=False)
+			df.to_csv('./[step 0] - rawfile_low_refine/[0]_std_0.5.csv', index=False)
 
 			print("[*] Step 0 - Complete.")
 			step = 1
@@ -77,7 +102,7 @@ def DataAnalytics(step):
 		elif(step == 1):
 			# 표준편차가 극히 적은 일부 피쳐 삭제된 데이터를
 			# Pass / Fail / All 으로 나누는 과정 -> std 3.0
-			df1 = pd.read_csv('./[step 0] - rawfile_low_refine/[1]_std_1.0.csv')
+			df1 = pd.read_csv('./[step 0] - rawfile_low_refine/[0]_std_0.5.csv')
 			#df3 (std 3.0 제거버전)은 사용하지 않습니다. df1 으로 확정되었습니다.
 
 			all_df1, pass_df1, fail_df1 = devide_PF(df1)
@@ -258,11 +283,15 @@ def DataAnalytics(step):
 			# oversampling, downsampling test
 			RFE_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_RFE_MMS_All.csv')
 			RFE_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_RFE_STD_All.csv')
-			KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
-			KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
-
-			RFE_MMS = data_oversampling(RFE_MMS_ALL)
-			RFE_MMS = correlation_remove(RFE_MMS, 0.6, 0.8)
+			#KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
+			#KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
+			#print(RFE_MMS_ALL)
+			#RFE_MMS_TEST = correlation_remove(RFE_MMS_TEST, 0.1, 0.8)
+			
+			#RFE_MMS = data_oversampling(RFE_MMS_ALL)
+			#RFE_MMS = correlation_remove(RFE_MMS, 0.6, 0.8)
+			
+			#RFE_MMS.to_csv('./[step 8] Data_Oversampling/RFE_MMS.csv', index=False)
 			'''
 			test = RFE_MMS.drop(['Time'], axis=1).corr()
 
@@ -275,15 +304,17 @@ def DataAnalytics(step):
 			plt.show()
 			return
 			
-			
+			'''
+			### smote_LOGISTIC PERFORM_에서는 corr 제거가 부정적 영향을 끼침
+
 			acc = 0
 			pre = 0
 			rec = 0
 			f1 = 0
 			roc = 0
-
 			for _ in range(0, 100):
-				OVER = data_oversampling(RFE_MMS)
+				OVER = data_oversampling(RFE_MMS_ALL)
+				OVER = OVER.dropna()
 				a, b, c, d, e = Confuse_Matrix_Performance(OVER)
 				acc += a
 				pre += b
@@ -295,9 +326,9 @@ def DataAnalytics(step):
 			rec = round(rec/100, 4)
 			f1 = round(f1/100, 4)
 			roc = round(roc/100, 4)
-			print("\n\nRFE_MMS")
+			print("\n\n[SMOTE] RFE_MMS")
 			print(acc, pre, rec, f1, roc)
-			'''
+			
 			
 			step = 9
 			pass
@@ -387,7 +418,8 @@ def correlation_remove(df, per, abs_num):
 	extract = []
 	for i in range(0, int(len(corr_df.index) * per)):
 		extract.append(list(corr_df.index)[i])
-	extract.remove("Pass/Fail")
+	if("Pass/Fail" in extract):
+		extract.remove("Pass/Fail")
 	return df.drop(extract, axis=1)
 
 
@@ -571,8 +603,19 @@ def data_oversampling(df):
 	X_train_over, y_train_over = smote.fit_resample(X, list(Y))
 	return pd.concat([save_col, X_train_over], axis=1)
 
+def data_undersampling(df):
+	save_col = df.loc[:, ['Time', 'Pass/Fail']]
+	X = df.drop(['Time','Pass/Fail'], axis=1)
+	Y = df['Pass/Fail']
+	X_train_over, y_train_over = CondensedNearestNeighbour().fit_resample(X, list(Y))
+	return pd.concat([save_col, X_train_over], axis=1)
+
 ## Fail데이터를 오버샘플링 한 결과물과
 ## Pass데이터를 언더샘플링을 한 결과물을 비교할 예정
+'''
+[Under_Random] RFE_MMS
+0.8495 0.0367 0.0047 0.0082 0.4643
+'''
 
 '''
 임시함수
@@ -603,4 +646,4 @@ def visual2(df):
 	plt.savefig('[11]RFE_STD_FAIL.png')
 
 # @param : 시작하고 싶은 전처리 단계
-DataAnalytics(8)
+DataAnalytics(0)
