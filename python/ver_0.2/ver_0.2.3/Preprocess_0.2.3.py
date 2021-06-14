@@ -28,39 +28,18 @@ from imblearn.under_sampling import CondensedNearestNeighbour, RandomUnderSample
 
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
-# @return (미구현) 점수 리스트 
+# @return 점수 리스트
 def Confuse_Matrix_Performance(df):
 	#https://injo.tistory.com/13
 	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
-	scaler = MinMaxScaler()
+	X = df.iloc[1:, 1:]
+	Y = df.iloc[1:, 0]
 
-	ORIGIN_DATA = pd.read_csv('./uci-secom.csv')
-	Y_test = ORIGIN_DATA.loc[:, ['Pass/Fail']]
-	X_test = ORIGIN_DATA.drop(['Pass/Fail'], axis=1).iloc[0:, 1:]
-	X_test = pd.DataFrame(scaler.fit_transform(X_test))
-	X_test = X_test.fillna(0).add_prefix('F')
-	
-
-	TRAIN_DATA = df.drop(['Time'], axis=1)
-	X_train = TRAIN_DATA.iloc[1:, 1:]
-	Y_train = TRAIN_DATA.iloc[1:, 0]
-	
-	
-	X_train_cols = list(X_train.columns)
-	X_test_cols = list(X_test.columns)
-	new_cols = []
-	for i in X_test_cols:
-		if (i not in X_train_cols):
-			new_cols.append(i)
-
-	X_test = X_test.drop(new_cols, axis=1)
-
-	model = LogisticRegression()
-	model.fit(X_train, Y_train)
-
-	pred = model.predict(X_test)
-	pred_proba = model.predict_proba(X_test)[:, 1:]
-
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y)
+	lr_clf = LogisticRegression()
+	lr_clf.fit(X_train, Y_train)
+	pred = lr_clf.predict(X_test)
+	pred_proba = lr_clf.predict_proba(X_test)[:, 1:]
 
 	matrix = confusion_matrix(Y_test, y_pred=pred)
 	accuracy = accuracy_score(Y_test, pred)
@@ -68,11 +47,10 @@ def Confuse_Matrix_Performance(df):
 	recall = recall_score(Y_test, pred)
 	f1 = f1_score(Y_test, pred)
 	roc_auc = roc_auc_score(Y_test, pred_proba)
-	print("Confusion Matrix")
-	print(matrix)
+	#print("Confusion Matrix")
+	#print(matrix)
 	result = ('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
 	return accuracy, precision, recall, f1, roc_auc
-
 
 '''
 @param - steps : 기 진행 되어 데이터 셋을 확보한 경우, 해당 단계부터 할 수 있도록 함
@@ -282,13 +260,10 @@ def DataAnalytics(step):
 			RFE_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_RFE_STD_All.csv')
 			#KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
 			#KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
-			#print(RFE_MMS_ALL)
 			#RFE_MMS_TEST = correlation_remove(RFE_MMS_TEST, 0.1, 0.8)
-			
-			#RFE_MMS = data_oversampling(RFE_MMS_ALL)
-			#RFE_MMS = correlation_remove(RFE_MMS, 0.6, 0.8)
-			
-			#RFE_MMS.to_csv('./[step 8] Data_Oversampling/RFE_MMS.csv', index=False)
+			RFE_OVER = data_oversampling(RFE_MMS_ALL)
+
+			RFE_MMS.to_csv('./[step 8] Data_Oversampling/RFE_MMS.csv', index=False)
 			'''
 			test = RFE_MMS.drop(['Time'], axis=1).corr()
 
@@ -304,31 +279,11 @@ def DataAnalytics(step):
 			'''
 			### smote_LOGISTIC PERFORM_에서는 corr 제거가 부정적 영향을 끼침
 
-			acc = 0
-			pre = 0
-			rec = 0
-			f1 = 0
-			roc = 0
-			for _ in range(0, 10):
-				OVER = data_oversampling(RFE_MMS_ALL)
-				OVER = OVER.dropna()
-				a, b, c, d, e = Confuse_Matrix_Performance(OVER)
-				acc += a
-				pre += b
-				rec += c
-				f1 += d
-				roc += e
-			acc = round(acc/100, 4)
-			pre = round(pre/100, 4)
-			rec = round(rec/100, 4)
-			f1 = round(f1/100, 4)
-			roc = round(roc/100, 4)
-			print("\n\n[SMOTE] RFE_MMS")
-			print(acc, pre, rec, f1, roc)
+			### 성능 평가 부분 모듈화 하였습니다.
 			
 			
 			step = 9
-			pass
+			print("[*] Step 9 - Complete")
 
 		elif(step == 9):
 			# Performance Verification [ FINAL ]
@@ -591,18 +546,43 @@ def outlier_change(df, weight):
     return pd.concat([df_save, df], axis=1)
 
 
+def data_performance(df):
+	#RFE_MMS = correlation_remove(RFE_MMS, 0.6, 0.8)
+	acc = 0
+	pre = 0
+	rec = 0
+	f1 = 0
+	roc = 0
+	for _ in range(0, 1000):
+		OVER = data_oversampling(RFE_MMS_ALL)
+		OVER = OVER.dropna()
+		print(OVER)
+		a, b, c, d, e = Confuse_Matrix_Performance(OVER)
+		acc += a
+		pre += b
+		rec += c
+		f1 += d
+		roc += e
+	acc = round(acc/1000, 4)
+	pre = round(pre/1000, 4)
+	rec = round(rec/1000, 4)
+	f1 = round(f1/1000, 4)
+	roc = round(roc/1000, 4)
+	print("\n\n[SMOTEENN] RFE_MMS")
+	print(acc, pre, rec, f1, roc)
+	pass
 
 def data_oversampling(df):
-	smote = SMOTE()
+	smote = SMOTEENN()
 	save_col = df.loc[:, 'Time']
 	X = df.drop(['Time'], axis=1)
 	Y = df['Pass/Fail']
 	X_train_over, y_train_over = smote.fit_resample(X, list(Y))
-	return pd.concat([save_col, X_train_over], axis=1)
+	return X_train_over
 
 def data_undersampling(df):
 	save_col = df.loc[:, ['Time', 'Pass/Fail']]
-	X = df.drop(['Time','Pass/Fail'], axis=1)
+	X = df.drop(['Time'], axis=1)
 	Y = df['Pass/Fail']
 	X_train_over, y_train_over = CondensedNearestNeighbour().fit_resample(X, list(Y))
 	return pd.concat([save_col, X_train_over], axis=1)
