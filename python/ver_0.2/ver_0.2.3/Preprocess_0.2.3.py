@@ -271,7 +271,13 @@ def DataAnalytics(step):
 			#KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
 			#KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
 			#RFE_MMS_TEST = correlation_remove(RFE_MMS_TEST, 0.1, 0.8)
-			
+			test = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
+			test = test.drop(['Time', 'Pass/Fail'], axis=1).corr()
+			mask = np.zeros_like(test, dtype=np.bool)
+			mask[np.triu_indices_from(mask)] =True 
+			sns.heatmap(test, cmap='Greens', annot=False, mask=mask, vmin=0, vmax=1)
+			plt.show()
+
 			X = FINAL_SET.iloc[:, 2:]
 			Y = FINAL_SET.iloc[:, 1]
 
