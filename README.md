@@ -1,6 +1,6 @@
 ## Bigdata Analytics - 2021-01 INE5015
 
-** 종강 **
+**종강**
 
 ---
 
