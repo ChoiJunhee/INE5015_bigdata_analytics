@@ -1,19 +1,10 @@
 ## Bigdata Analytics - 2021-01 INE5015
 
-**데이터 분석, 가공, 모델링 관련 자료를 원활하게 취합하고, 효율성을 위해 최종 발표까지 git을 사용합니다.**
+** 종강 **
 
 ---
 
-issue #28 - 개인 일정 확인 
-
----
-
-## 일정
-줌과 카카오톡 등을 이용하여 공지하며, 기본적으로 issue를 확인하시길 바랍니다.
-
----
-
-# Our Code of Conduct
+### Our Code of Conduct
 
 Beautiful is better than ugly.
 
