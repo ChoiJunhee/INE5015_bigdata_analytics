@@ -30,22 +30,38 @@ from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
 from imblearn.under_sampling import CondensedNearestNeighbour, RandomUnderSampler
 
+'''
+	LogisticRegression
+	0.9153606858988838
+	{'max_iter': 175, 'penalty': 'none'}
+
+	DecisionTreeClassifier
+	0.8500169549759121
+	{'criterion': 'entropy', 'max_depth': 8, 'min_samples_leaf': 0.01, 'min_samples_split': 6}
+
+	RandomForestClassifier
+	0.9902968584231788
+	{'max_depth': 15, 'max_features': 'log2', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 150}
+
+	XGBClassifier
+	0.9863600371906184
+	{'colsample_bytree': 0.5, 'gamma': 0.15, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.01, 'reg_lambda': 0.1, 'subsample': 0.4}
+'''
+
 # @param 'Time'이 제거된 Pass/Fail Label 데이터프레임
 # @result Confuse Matrix에 의한 결과 출력...
 # @return 점수 리스트 = train_test_split(X, Y, test_size=0.2, stratify=Y)
 def Confuse_Matrix_Performance(X_train, X_test, Y_train, Y_test, n):
-	#https://injo.tistory.com/13
-	#http://blog.naver.com/PostView.nhn?blogId=siniphia&logNo=221396370872
 	warnings.filterwarnings(action='ignore')
 
 	if(n==0):
-		clf = LogisticRegression()
+		clf = LogisticRegression(max_iter=200, penalty='l2')
 	elif(n==1):
-		clf = DecisionTreeClassifier(max_depth=10)
+		clf = DecisionTreeClassifier(max_depth=8, criterion='entropy', min_samples_leaf=0.01, min_samples_split=6 )
 	elif(n==2):
-		clf = RandomForestClassifier(max_depth=10, n_estimators=120)
+		clf = RandomForestClassifier(max_depth= 8, max_features='log2', min_samples_leaf=1, min_samples_split=2, n_estimators=100)
 	else:
-		clf = xgboost.XGBClassifier(learning_rate=0.1, max_depth=10, n_estimators=120)
+		clf = xgboost.XGBClassifier(colsample_bytree=0.5, gamma=0.2, learning_rate=0.15, max_depth=8, n_estimators=100, reg_alpha= 0.05, reg_lambda=0.1, subsample=0.4)
 	
 	clf.fit(X_train, Y_train)
 	pred = clf.predict(X_test)
@@ -57,9 +73,6 @@ def Confuse_Matrix_Performance(X_train, X_test, Y_train, Y_test, n):
 	recall = recall_score(Y_test, pred)
 	f1 = f1_score(Y_test, pred)
 	
-	#print("Confusion Matrix")
-	#print(matrix)
-	#result = ('Accuracy: {0:.4f}, Precision: {1:.4f}, Recall: {2:.4f}, F1-Score: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
 	return accuracy, precision, recall, f1, roc_auc
 
 '''
@@ -170,8 +183,6 @@ def DataAnalytics(step):
 			s4_fail = pd.read_csv('./[step 4] - DC - Missing_Value_Inputation/m45_fail.csv')
 
 
-			#이상치 처리-> fail 데이터가 너무 적어 IQR 1.75로 설정했음.
-
 			s5_w15_p50_pass = outlier_change(s4_pass, 1.5)
 			s5_w15_p50_fail = outlier_change(s4_fail, 1.5)
 			s5_w15_p50_all = outlier_change(s4_all, 1.5)
@@ -192,8 +203,6 @@ def DataAnalytics(step):
 
 		elif(step == 6):
 			# 스케일링 단계
-			# ref : https://mizykk.tistory.com/101
-			# 이상치 weight, percent에 따라 조절이 가능하므로 Robust는 제외함
 			# 표준화 스케일러, MINMAX 스케일러만 사용
 			s4_all = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_all.csv')
 			s4_pass = pd.read_csv('./[step 5] - DC - Oulier_refine/w10_pass.csv')
@@ -221,9 +230,6 @@ def DataAnalytics(step):
 			
 		elif(step == 7):
 			# Feature Selection
-			# step 6, step 7간 비교 시각화 자료 요청합니다. 
-			# 이 부분은 중요하니 시도한 기록을 지우지 말고 주석처리 합니다.
-
 			## MINMAX와 STD간의 차이가 매우 적어 MMS으로 진행합니다.
 
 			MINMAX_Scale_all = pd.read_csv('./[step 6] - DC - scaling/MINMAX_all.csv')
@@ -255,7 +261,6 @@ def DataAnalytics(step):
 			#Confuse_Matrix_Performance(RFE_STD_ALL)
 
 			## 확인 결과 MMS와 STD간의 큰 차이는 없었음 ##
-			## 그치만 오버샘플링/다운샘플링 진행은 하고 결정 예정 ##
 
 			RFE_MMS_ALL.to_csv('./[step 7] Feature_Selection/[0]_RFE_MMS_All.csv', index=False)
 			RFE_STD_ALL.to_csv('./[step 7] Feature_Selection/[1]_RFE_STD_All.csv', index=False)
@@ -271,34 +276,22 @@ def DataAnalytics(step):
 			#KBS_MMS_ALL = pd.read_csv('./[step 7] Feature_Selection/[0]_KBS_MMS_All.csv')
 			#KBS_STD_ALL = pd.read_csv('./[step 7] Feature_Selection/[1]_KBS_STD_All.csv')
 			#RFE_MMS_TEST = correlation_remove(RFE_MMS_TEST, 0.1, 0.8)
+			'''
 			test = pd.read_csv('./[step 1] - devide_PF/std10_all.csv')
 			test = test.drop(['Time', 'Pass/Fail'], axis=1).corr()
 			mask = np.zeros_like(test, dtype=np.bool)
 			mask[np.triu_indices_from(mask)] =True 
 			sns.heatmap(test, cmap='Greens', annot=False, mask=mask, vmin=0, vmax=1)
 			plt.show()
+			'''
 
 			X = FINAL_SET.iloc[:, 2:]
 			Y = FINAL_SET.iloc[:, 1]
 
 			data_performance(X, Y)
 			
-			'''
-			test = RFE_MMS.drop(['Time'], axis=1).corr()
-
-			mask = np.zeros_like(test, dtype=np.bool)
-			mask[np.triu_indices_from(mask)] = True
-
-			sns.heatmap(test, cmap='RdYlGn_r', mask=mask)#, annot=True)
-			plt.title("heatmap", fontsize=20)
-			plt.savefig('heat1.png')
-			plt.show()
-			return
-			
-			'''
 			### smote_LOGISTIC PERFORM_에서는 corr 제거가 부정적 영향을 끼침
 
-			### 성능 평가 부분 모듈화 하였습니다.
 			# Performance Verification [ FINAL ]
 			
 			print("[*] Preprocessing Complete.")
@@ -474,8 +467,6 @@ def set_data_scale(df):
 	return MM, SS
 
 def feature_selection(df, per):
-	# 크게 세 방법으로 구분할 수 있는데
-	# Filtering, Wrapper, Embedded가 있다.
 	# Wrapper는 실제 모델을 학습하면서 부분집합 중 중요한 것들을 얻어내는데
 	# 이번 프로젝트에서는 모델 학습이 들어가는지 안들어가는지 몰라서
 	# 일단 여러 방법 중 사이킷 런이 제공하는 몇 개의 방법으로 FE를 진행한다.
@@ -489,7 +480,6 @@ def feature_selection(df, per):
 
 	# Reference : https://velog.io/@yeonha0422/Feature-Selection
 	# Reference : https://www.kaggle.com/harangdev/feature-selection
-	## PCA 방식을 테스트 결과는 당연하지만 저차원 숫자들에게 의미가 없..
 
 
 	## 단일 변수 선택 방식
@@ -503,22 +493,11 @@ def feature_selection(df, per):
 	select_df = pd.DataFrame(select_df)
 	KBS_ = pd.concat([save, select_df], axis=1)
 
-	#[! WARNING !] Feature 적혀있는 행이 없어짐... (KBEST이후...) 도움...
 	# 현재 피쳐 수 93(0.75기준) SelectKBest 의 내용은 레퍼런스 보몀 나와있음!
-	# 나름 사분위 per에 맞추어봤는데 이건 
-
 	## RFECV는 k-fold validation 이 필요한데, Fail의 개수가 너무 적어 사용 안함. 
 
 	model = LogisticRegression(solver='liblinear')
 	RFE_df = RFE(model, n_features_to_select=(int(per * len(df.columns))), step=1).fit(df, Y_pf)
-	# 위 모델과 비교하기 위해 피쳐 개수를 동일하게 적용
-
-	#print("Num Features: " + str(RFE_df.n_features_))
-	#print()
-	#print("Selected Features: "+ str(RFE_df.support_))
-	#print()
-	#print("Feature Ranking: "+ str(RFE_df.ranking_))
-	#print()
 
 	rank_df = pd.DataFrame(RFE_df.ranking_)
 	rank_df.index = df.columns
@@ -564,54 +543,109 @@ def data_performance(X, Y):
 	warnings.filterwarnings(action='ignore')
 	
 	Y_train = pd.DataFrame(Y_train, columns=['Pass/Fail'])
-	NEWDF = pd.concat([Y_train, X_train], axis=1)
-	NEWDF = data_oversampling(NEWDF)
-	Y_train = NEWDF.iloc[:, 0]
-	X_train = NEWDF.iloc[:, 1:]
+	NEWDF1 = pd.concat([Y_train, X_train], axis=1)
+	NEWDF1 = data_oversampling(NEWDF1)
+	Y_train = NEWDF1.iloc[:, 0]
+	X_train = NEWDF1.iloc[:, 1:]
+
+	Y_test = pd.DataFrame(Y_test, columns=['Pass/Fail'])
+	NEWDF2 = pd.concat([Y_test, X_test], axis=1)
+	NEWDF2 = data_oversampling(NEWDF2)
+	Y_test = NEWDF2.iloc[:, 0]
+	X_test = NEWDF2.iloc[:, 1:]
 
 
+	#HyperParameter Tuning은  0.3 버전에서 추가 업데이트 예정입니다.
 	'''
 	LR_CLF = LogisticRegression()
-	params={'penalty':['l2', 'none']}
+	params={'penalty':['l1', 'l2', 'elasticnet', 'none'],
+			'max_iter':[150, 175, 200, 225, 250, 275],
+			}
 
-	grid_clf = GridSearchCV(LR_CLF, param_grid=params, scoring='accuracy', cv=3 )
+	grid_clf = GridSearchCV(LR_CLF, param_grid=params, scoring='f1', cv=5)
 	grid_clf.fit(X_train, Y_train)
 	LR_PARAM = grid_clf.best_params_
-	print(LR_PARAM)
+	print("LogisticRegression")
+	print(grid_clf.best_score_)
+	print(grid_clf.best_params_)
+	print()
 
 
 	# DT_GCV
 	DT_CLF = DecisionTreeClassifier()
-	parameters = {'max_depth': [3, 5, 7],
-	              'min_samples_split': [3, 5],
-	              'splitter': ['best', 'random']}
-
-	grid_dt = GridSearchCV(DT_CLF, param_grid = parameters, cv = 5, n_jobs = -1)
+	params = {'criterion':['gini', 'entropy'],
+				  'max_depth':[1, 3, 5],
+				  'min_samples_split':[4, 6, 8],
+				  'min_samples_leaf':[0.01, 0.03, 0.05]
+				 }
+	grid_dt = GridSearchCV(DT_CLF, param_grid=params, scoring='f1',  n_jobs = -1, cv=5)
 	grid_dt.fit(X_train, Y_train)
 	DT_PARAM = grid_dt.cv_results_['params']
-	print(DT_PARAM)
-
+	print("DecisionTreeClassifier")
+	print(grid_dt.best_score_)
+	print(grid_dt.best_params_)
+	print()
+	
 	# RF_GCV
-	RF_CLF = RandomForestClassifier(random_state = 0, n_jobs = -1)
-	params = { 'n_estimators' : [10, 100],
-           'max_depth' : [6, 8, 10, 12],
-           'min_samples_leaf' : [8, 12, 18],
-           'min_samples_split' : [8, 16, 20]
+	RF_CLF = RandomForestClassifier(n_jobs = -1)
+	params = {'n_estimators':[130, 150, 170],
+           	  'max_depth':[5, 10],
+              'min_samples_leaf':[1, 2, 4],
+              'min_samples_split':[2, 4, 8],
+              'max_features':['auto', 'sqrt', 'log2'],
+
             }
-	grid_cv = GridSearchCV(RF_CLF, param_grid = params, cv = 3, n_jobs = -1)
+	grid_cv = GridSearchCV(RF_CLF, param_grid = params, scoring='f1', n_jobs = -1, cv=5)
 	grid_cv.fit(X_train,Y_train)
 	RF_PARAM = grid_cv.best_params_
-	print(RF_PARAM)
-
+	print("RandomForestClassifier")
+	print(grid_cv.best_score_)
+	print(grid_cv.best_params_)
+	print()
+	return
+	
 	# XGB-GCV 
 	XGB_CLF = xgboost.XGBClassifier()
 
-	xgb_parameters = {'n_estimators':[120, 150, 170], 'learning_rate':[0.07, 0.1,0.15], 'max_depth':[2, 3, 4]}
-	xgb_grid = GridSearchCV(XGB_CLF, param_grid=xgb_parameters,scoring=make_scorer(recall_score),  cv=3, refit=True)
+	params = {'n_estimators':[100], 
+					  'learning_rate':[0.05, 0.1, 0.15], 
+					  'max_depth':[5],
+					  'gamma':[0.2,0.25,0.3],
+					  'subsample':[0.4, 0.5],
+					  'colsample_bytree':[0.55,0.6,0.65],
+					  'reg_lambda':[0.09,0.1,0.11],
+					  'reg_alpha':[0, 0.01]}
+	xgb_grid = GridSearchCV(XGB_CLF, param_grid=params, scoring='f1',  cv=5, refit=True)
 	xgb_grid.fit(X_train, Y_train)
 	XG_PARAM = xgb_grid.best_params_
-	print(XG_PARAM)
-'''
+	print("XGBClassifier")
+	print(xgb_grid.best_score_)
+	print(xgb_grid.best_params_)
+	print()
+	'''
+
+	#########################################
+	##### Hyper Parameter Tuning Result #####
+	#########################################
+	'''
+	LogisticRegression
+	0.9153606858988838
+	{'max_iter': 175, 'penalty': 'none'}
+
+	DecisionTreeClassifier
+	0.8500169549759121
+	{'criterion': 'entropy', 'max_depth': 8, 'min_samples_leaf': 0.01, 'min_samples_split': 6}
+
+	RandomForestClassifier
+	0.9902968584231788
+	{'max_depth': 15, 'max_features': 'log2', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 150}
+
+	XGBClassifier
+	0.9863600371906184
+	{'colsample_bytree': 0.5, 'gamma': 0.15, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.01, 'reg_lambda': 0.1, 'subsample': 0.4}
+	'''
+
+
 	results = []
 	for n in range(0,4):
 		acc = 0
@@ -620,18 +654,18 @@ def data_performance(X, Y):
 		f1 = 0
 		roc = 0
 
-		for _ in range(0, 100):
+		for _ in range(0, 50):
 			a, b, c, d, e = Confuse_Matrix_Performance(X_train, X_test, Y_train, Y_test, n)
 			acc += a
 			pre += b
 			rec += c
 			f1 += d
 			roc += e
-		acc = round(acc/100, 4)
-		pre = round(pre/100, 4)
-		rec = round(rec/100, 4)
-		f1 = round(f1/100, 4)
-		roc = round(roc/100, 4)
+		acc = round(acc/50, 4)
+		pre = round(pre/50, 4)
+		rec = round(rec/50, 4)
+		f1 = round(f1/50, 4)
+		roc = round(roc/50, 4)
 		results.append([acc, pre, rec, f1, roc])
 
 	for n in range(4):
