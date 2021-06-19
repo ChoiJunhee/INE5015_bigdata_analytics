@@ -1,9 +1,3 @@
-## Bigdata Analytics - 2021-01 INE5015
-
-**start again in july**
-
----
-
 ### Our Code of Conduct
 
 Beautiful is better than ugly.
