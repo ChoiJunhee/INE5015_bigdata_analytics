@@ -1,41 +1,6 @@
-### Our Code of Conduct
+### Time Line
 
-Beautiful is better than ugly.
-
-Explicit is better than implicit.
-
-Simple is better than complex.
-
-Complex is better than complicated.
-
-Flat is better than nested.
-
-Sparse is better than dense.
-
-Readability counts.
-
-Special cases aren't special enough to break the rules.
-
-Although practicality beats purity.
-
-Errors should never pass silently.
-
-Unless explicitly silenced.
-
-In the face of ambiguity, refuse the temptation to guess.
-
-There should be one--and preferably only one--obvious way to do it.
-
-Although that way may not be obvious at first unless you're Dutch.
-
-Now is better than never.
-
-Although never is often better than "right" now.
-
-If the implementation is hard to explain, it's a bad idea.
-
-If the implementation is easy to explain, it may be a good idea.
-
-Namespaces are one honking great idea.. let's do more of those!
-
-Please do act our project...
+2021. 06. 21 - 머신러닝 공부를 위한 Repository로 용도 변경
+2021. 06. 21 - 한양대학교 ERICA 종강
+2021. 06. 14 - 0.2.4 beta | 빅데이터 애널리틱스 발표
+2021. 03. 02 - 빅데이터 애널리틱스 프로젝트 시작
